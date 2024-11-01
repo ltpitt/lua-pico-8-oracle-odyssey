@@ -1,14 +1,19 @@
--- Game states
+pico-8 cartridge // http://www.pico-8.com
+version 42
+__lua__
+-- state machine 
+
+-- game states
 game_states = {
     splash = 1,
     game = 2,
     gameover = 3
 }
 
--- Initial state
+-- initial state
 state = game_states.splash
 
--- Player variables
+-- player variables
 player = {
     x = 16,
     y = 64,
@@ -19,12 +24,12 @@ player = {
     gravity = 0.2
 }
 
--- Obstacle variables
+-- obstacle variables
 obstacles = {}
 obstacle_timer = 0
 obstacle_interval = 60
 
--- Game variables
+-- game variables
 score = 0
 game_over = false
 
@@ -33,7 +38,7 @@ function _init()
     state = game_states.splash
 end
 
-function _update()
+function _update60()
     if state == game_states.splash then   
         update_splash()
     elseif state == game_states.game then
@@ -54,7 +59,7 @@ function _draw()
     end
 end
 
--- SPLASH
+-- splash
 
 function update_splash()
     if btnp(4) then 
@@ -63,12 +68,12 @@ function update_splash()
 end
 
 function draw_splash() 
-    rectfill(0, 0, SCREEN_SIZE, SCREEN_SIZE, 11)
-    local text = "Press Z to Start"
+    rectfill(0, 0, screen_size, screen_size, 11)
+    local text = "press z to start"
     write(text, text_x_pos(text), 52, 7)
 end
 
--- GAME
+-- game
 
 function update_game()
     if not game_over then
@@ -147,7 +152,7 @@ function draw_score()
     print("score: "..score, 1, 1, 7)
 end
 
--- GAME OVER
+-- game over
 
 function update_gameover()
     if btnp(4) then
@@ -156,32 +161,32 @@ function update_gameover()
 end
 
 function draw_gameover()
-    print("Game Over!", 48, 20, 8)
-    print("Press Z to Restart", 32, 30, 8)
+    print("game over!", 48, 20, 8)
+    print("press z to continue", 32, 30, 8)
 end
 
--- Utils
+-- utils
 
--- Change this if you use a different resolution like 64x64
-SCREEN_SIZE = 128
+-- change this if you use a different resolution like 64x64
+screen_size = 128
 
--- Calculate center position in X axis
--- This is assuming the text uses the system font which is 4px wide
+-- calculate center position in x axis
+-- this is assuming the text uses the system font which is 4px wide
 function text_x_pos(text)
     local letter_width = 4
 
-    -- First calculate how wide is the text
+    -- first calculate how wide is the text
     local width = #text * letter_width
     
-    -- If it's wider than the screen then it's multiple lines so we return 0 
-    if width > SCREEN_SIZE then 
+    -- if it's wider than the screen then it's multiple lines so we return 0 
+    if width > screen_size then 
         return 0 
     end 
 
-    return SCREEN_SIZE / 2 - flr(width / 2)
+    return screen_size / 2 - flr(width / 2)
 end
 
--- Prints black bordered text
+-- prints black bordered text
 function write(text, x, y, color) 
     for i = 0, 2 do
         for j = 0, 2 do
@@ -191,12 +196,12 @@ function write(text, x, y, color)
     print(text, x + 1, y + 1, color)
 end 
 
--- Returns if module of a/b == 0. Equals to a % b == 0 in other languages
+-- returns if module of a/b == 0. equals to a % b == 0 in other languages
 function mod_zero(a, b)
    return a - flr(a / b) * b == 0
 end
 
--- Change state function
+-- change state function
 function change_state(new_state)
     state = new_state
     if state == game_states.game then
@@ -204,7 +209,7 @@ function change_state(new_state)
     end
 end
 
--- Initialize game state
+-- initialize game state
 function _init_game()
     player.y = 64
     player.dy = 0
