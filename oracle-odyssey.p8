@@ -1,7 +1,14 @@
-pico-8 cartridge // http://www.pico-8.com
-version 42
-__lua__
--- player variables
+-- Game states
+game_states = {
+    splash = 1,
+    game = 2,
+    gameover = 3
+}
+
+-- Initial state
+state = game_states.splash
+
+-- Player variables
 player = {
     x = 16,
     y = 64,
@@ -12,126 +19,196 @@ player = {
     gravity = 0.2
 }
 
--- obstacle variables
+-- Obstacle variables
 obstacles = {}
 obstacle_timer = 0
 obstacle_interval = 60
 
--- game variables
+-- Game variables
 score = 0
 game_over = false
 
 function _init()
-    -- initialize game state
-    player.y = 64
-    player.dy = 0
-    obstacles = {}
-    score = 0
-    game_over = false
+    cls()
+    state = game_states.splash
 end
 
-function _update60()
+function _update()
+    if state == game_states.splash then   
+        update_splash()
+    elseif state == game_states.game then
+        update_game() 
+    elseif state == game_states.gameover then
+        update_gameover()
+    end
+end
+
+function _draw()
+    cls()
+    if state == game_states.splash then   
+        draw_splash()
+    elseif state == game_states.game then
+        draw_game()
+    elseif state == game_states.gameover then
+        draw_gameover()
+    end
+end
+
+-- SPLASH
+
+function update_splash()
+    if btnp(4) then 
+        change_state(game_states.game)
+    end
+end
+
+function draw_splash() 
+    rectfill(0, 0, SCREEN_SIZE, SCREEN_SIZE, 11)
+    local text = "Press Z to Start"
+    write(text, text_x_pos(text), 52, 7)
+end
+
+-- GAME
+
+function update_game()
     if not game_over then
-        -- player jump
-        if btnp(4) and player.y == 64 then
-            player.dy = player.jump_strength
-        end
-
-        -- apply gravity
-        player.dy = player.dy + player.gravity
-        player.y = player.y + player.dy
-
-        -- prevent player from falling below ground
-        if player.y > 64 then
-            player.y = 64
-            player.dy = 0
-        end
-
-        -- update obstacles
-        obstacle_timer = obstacle_timer + 1
-        if obstacle_timer > obstacle_interval then
-            add(obstacles, {x = 128, y = 64, width = 8, height = 8})
-            obstacle_timer = 0
-        end
-
-        for obstacle in all(obstacles) do
-            obstacle.x = obstacle.x - 2
-            if obstacle.x < -8 then
-                del(obstacles, obstacle)
-                score = score + 1
-            end
-
-            -- check collision
-            if player.x < obstacle.x + obstacle.width and
-               player.x + player.width > obstacle.x and
-               player.y < obstacle.y + obstacle.height and
-               player.y + player.height > obstacle.y then
-                game_over = true
-            end
-        end
+        handle_player_input()
+        apply_gravity()
+        update_obstacles()
+        check_collisions()
     else
-        -- restart game
         if btnp(4) then
             _init()
         end
     end
 end
 
-function _draw()
-    cls()
-    -- draw player
+function draw_game()
+    draw_player()
+    draw_obstacles()
+    draw_score()
+end
+
+function handle_player_input()
+    if btnp(4) and player.y == 64 then
+        player.dy = player.jump_strength
+    end
+end
+
+function apply_gravity()
+    player.dy = player.dy + player.gravity
+    player.y = player.y + player.dy
+
+    if player.y > 64 then
+        player.y = 64
+        player.dy = 0
+    end
+end
+
+function update_obstacles()
+    obstacle_timer = obstacle_timer + 1
+    if obstacle_timer > obstacle_interval then
+        add(obstacles, {x = 128, y = 64, width = 8, height = 8})
+        obstacle_timer = 0
+    end
+
+    for obstacle in all(obstacles) do
+        obstacle.x = obstacle.x - 2
+        if obstacle.x < -8 then
+            del(obstacles, obstacle)
+            score = score + 1
+        end
+    end
+end
+
+function check_collisions()
+    for obstacle in all(obstacles) do
+        if player.x < obstacle.x + obstacle.width and
+           player.x + player.width > obstacle.x and
+           player.y < obstacle.y + obstacle.height and
+           player.y + player.height > obstacle.y then
+            game_over = true
+            change_state(game_states.gameover)
+        end
+    end
+end
+
+function draw_player()
     rectfill(player.x, player.y, player.x + player.width, player.y + player.height, 7)
-				
-    -- draw obstacles
+end
+
+function draw_obstacles()
     for obstacle in all(obstacles) do
         rectfill(obstacle.x, obstacle.y, obstacle.x + obstacle.width, obstacle.y + obstacle.height, 9)
     end
+end
 
-    -- draw score
+function draw_score()
     print("score: "..score, 1, 1, 7)
+end
 
-    -- draw game over message
-    if game_over then
-        print("game over!", 48, 20, 8)
-        print("press z to restart", 32, 30, 8)
+-- GAME OVER
+
+function update_gameover()
+    if btnp(4) then
+        change_state(game_states.splash)
     end
 end
-__gfx__
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001b
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000013b
-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000013bb
-000000000000000000000000000000000000000000000001110000000000000000000000000000000000000000000000000000000000000000000000000013bb
-00000000000000000000000000000000000000000000001bb7100000000000000000000000000000000000000000000000000000000000000000000000013bbb
-00000000000000000000000000000000000000000000013bb7710000000000111100000000000000000000000000000000000000000000000000000000013bbb
-0000000000000000000000000000011111100000000013bbbbb10000000001bb7710000000000000000000000000000000000000000000000000000000013bbb
-00000000000001111110000000001bbbb7710000000013bbabba1000000013bbb771000000001111111000000000011111100000000000000000000000013bbb
-0000000000001bbbb771000000013bbbbb77100000013bbbbbbb100000013bbbbbbb10000001bbbbb771100000001bbbb7710000000011111110000000013bbb
-0000000000013bbbbb7710000013bbbbbbbbb10000013bbbbb1b100000013bbabbbba1000013bbbbbb77710000013bbbbb7710000001bbbbb7711000000133bb
-000000000013bbbbbbbbb1000013bbbabbbba10000013bbbbb1b10000013bbbbbbbbb100013bbbbbbbbbbb100013bbbbbbbbb1000013bbbbbb7771000001333b
-000000000013bbbabbbba1000133bbbbbbbbbb1000013bbbbb1b10000013bbbbbb1bb100013bbbbabbbbba100013bbbabbbba100013bbbbbbbbbbb1000011333
-000000000133bbbbbbbbbb100133bbbbbbbbbb1000013bbbbb1b10000013bbbbbb1bb100133bbbbbbbb11bb10133bbbbbbbbbb10013bbbbabbbbba1000001111
-0000000001333bbbbb11bb1001333bbbbb11bb10000133bbbbbb100000133bbbbb1bb1001333bbbbbbb11bb101333bbbbb11bb10133bbbbbbb111bb100000000
-00000000013333bbbbbbb310013333bbbbbbb3100001333bbbb31000001333bbbbbb3100133333bbbbbbbb31013333bbbbbbb3101333bbbbbbbbbbb100000000
-00000000011333333333311001133333333331100001133333311000001133333333110011333333333333110113333333333110113333333333331100000000
-00000000001111111111110000111111111111000000111111110000000111111111100001111111111111100011111111111100011111111111111000000000
-__map__
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000003131310000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+function draw_gameover()
+    print("Game Over!", 48, 20, 8)
+    print("Press Z to Restart", 32, 30, 8)
+end
+
+-- Utils
+
+-- Change this if you use a different resolution like 64x64
+SCREEN_SIZE = 128
+
+-- Calculate center position in X axis
+-- This is assuming the text uses the system font which is 4px wide
+function text_x_pos(text)
+    local letter_width = 4
+
+    -- First calculate how wide is the text
+    local width = #text * letter_width
+    
+    -- If it's wider than the screen then it's multiple lines so we return 0 
+    if width > SCREEN_SIZE then 
+        return 0 
+    end 
+
+    return SCREEN_SIZE / 2 - flr(width / 2)
+end
+
+-- Prints black bordered text
+function write(text, x, y, color) 
+    for i = 0, 2 do
+        for j = 0, 2 do
+            print(text, x + i, y + j, 0)
+        end
+    end
+    print(text, x + 1, y + 1, color)
+end 
+
+-- Returns if module of a/b == 0. Equals to a % b == 0 in other languages
+function mod_zero(a, b)
+   return a - flr(a / b) * b == 0
+end
+
+-- Change state function
+function change_state(new_state)
+    state = new_state
+    if state == game_states.game then
+        _init_game()
+    end
+end
+
+-- Initialize game state
+function _init_game()
+    player.y = 64
+    player.dy = 0
+    obstacles = {}
+    score = 0
+    game_over = false
+end
