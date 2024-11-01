@@ -1,69 +1,78 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
--- state machine 
 
--- game states
-game_states = {
-    splash = 1,
-    game = 2,
-    gameover = 3
+game = {
+    states = {
+        splash = 1,
+        game = 2,
+        gameover = 3
+    },
+    state = 1,
+    score = 0,
+    game_over = false,
+    obstacle_count = 0,
+    obstacle_timer = 0,
+    obstacle_interval = 60,
+    debug = true  -- enable or disable debug prints
 }
 
--- initial state
-state = game_states.splash
-
--- player variables
 player = {
     x = 16,
-    y = 64,
+    y = 88,
     width = 8,
     height = 8,
     dy = 0,
     jump_strength = -3,
-    gravity = 0.2
+    gravity = 0.2,
+    jump_count = 0,
+    max_jumps = 1,
+    double_jump_enabled = false,
+    double_jump_timer = 0,
+    double_jump_duration = 300
 }
 
--- obstacle variables
 obstacles = {}
-obstacle_timer = 0
-obstacle_interval = 60
-
--- game variables
-score = 0
-game_over = false
 
 function _init()
     cls()
-    state = game_states.splash
+    game.state = game.states.splash
 end
 
 function _update60()
-    if state == game_states.splash then   
+    if game.state == game.states.splash then   
         update_splash()
-    elseif state == game_states.game then
+    elseif game.state == game.states.game then
         update_game() 
-    elseif state == game_states.gameover then
+    elseif game.state == game.states.gameover then
         update_gameover()
     end
 end
 
 function _draw()
     cls()
-    if state == game_states.splash then   
+    if game.debug then
+        draw_border()  -- draw the red border if debug is enabled
+    end
+    if game.state == game.states.splash then   
         draw_splash()
-    elseif state == game_states.game then
+    elseif game.state == game.states.game then
         draw_game()
-    elseif state == game_states.gameover then
+        if game.debug then
+            draw_debug_info()  -- draw debug information if debug is enabled
+        end
+    elseif game.state == game.states.gameover then
         draw_gameover()
     end
 end
 
--- splash
+function draw_border()
+    rect(0, 0, screen_size - 1, screen_size - 1, 8)
+end
 
 function update_splash()
     if btnp(4) then 
-        change_state(game_states.game)
+        change_state(game.states.game)
     end
 end
 
@@ -73,14 +82,13 @@ function draw_splash()
     write(text, text_x_pos(text), 52, 7)
 end
 
--- game
-
 function update_game()
-    if not game_over then
+    if not game.game_over then
         handle_player_input()
         apply_gravity()
         update_obstacles()
         check_collisions()
+        update_power_up()
     else
         if btnp(4) then
             _init()
@@ -95,8 +103,9 @@ function draw_game()
 end
 
 function handle_player_input()
-    if btnp(4) and player.y == 64 then
+    if btnp(4) and player.jump_count < player.max_jumps then
         player.dy = player.jump_strength
+        player.jump_count = player.jump_count + 1
     end
 end
 
@@ -104,24 +113,66 @@ function apply_gravity()
     player.dy = player.dy + player.gravity
     player.y = player.y + player.dy
 
-    if player.y > 64 then
-        player.y = 64
+    if player.y > 88 then
+        player.y = 88
         player.dy = 0
+        player.jump_count = 0
     end
 end
 
+function add_obstacle()
+    local obstacle_y = 88
+    local obstacle_height = 8
+    local obstacle_width = 8
+
+    local random_value = rnd(1)
+    local level = get_current_level()
+
+    if level == 1 then
+        obstacle_height = 8
+        obstacle_width = 8
+    elseif level == 2 then
+        if random_value < 0.1 then
+            obstacle_height = 16
+        elseif random_value < 0.2 then
+            obstacle_width = 16
+        end
+    elseif level == 3 then
+        if random_value < 0.1 then
+            obstacle_height = 16
+            obstacle_width = 16
+        elseif random_value < 0.3 then
+            obstacle_height = 16
+        elseif random_value < 0.5 then
+            obstacle_width = 16
+        end
+    else
+        if random_value < 0.05 then
+            obstacle_height = 16
+            obstacle_width = 16
+        elseif random_value < 0.25 then
+            obstacle_height = 16
+        elseif random_value < 0.45 then
+            obstacle_width = 16
+        end
+    end
+
+    add(obstacles, {x = 128, y = obstacle_y - obstacle_height + 8, width = obstacle_width, height = obstacle_height})
+    game.obstacle_count = game.obstacle_count + 1
+end
+
 function update_obstacles()
-    obstacle_timer = obstacle_timer + 1
-    if obstacle_timer > obstacle_interval then
-        add(obstacles, {x = 128, y = 64, width = 8, height = 8})
-        obstacle_timer = 0
+    game.obstacle_timer = game.obstacle_timer + 1
+    if game.obstacle_timer > game.obstacle_interval then
+        add_obstacle()
+        game.obstacle_timer = 0
     end
 
     for obstacle in all(obstacles) do
         obstacle.x = obstacle.x - 2
         if obstacle.x < -8 then
             del(obstacles, obstacle)
-            score = score + 1
+            game.score = game.score + 1
         end
     end
 end
@@ -132,8 +183,8 @@ function check_collisions()
            player.x + player.width > obstacle.x and
            player.y < obstacle.y + obstacle.height and
            player.y + player.height > obstacle.y then
-            game_over = true
-            change_state(game_states.gameover)
+            game.game_over = true
+            change_state(game.states.gameover)
         end
     end
 end
@@ -149,14 +200,29 @@ function draw_obstacles()
 end
 
 function draw_score()
-    print("score: "..score, 1, 1, 7)
+    print("score: "..game.score, 1, 1, 7)
 end
 
--- game over
+function draw_debug_info()
+    print("obstacle count: "..game.obstacle_count, 1, 20, 11)
+    print("level: "..get_current_level(), 1, 30, 11)
+end
+
+function get_current_level()
+    if game.obstacle_count < 5 then
+        return 1
+    elseif game.obstacle_count < 15 then
+        return 2
+    elseif game.obstacle_count < 30 then
+        return 3
+    else
+        return 4
+    end
+end
 
 function update_gameover()
     if btnp(4) then
-        change_state(game_states.splash)
+        change_state(game.states.splash)
     end
 end
 
@@ -165,28 +231,33 @@ function draw_gameover()
     print("press z to continue", 32, 30, 8)
 end
 
--- utils
+function update_power_up()
+    if player.double_jump_enabled then
+        player.double_jump_timer = player.double_jump_timer - 1
+        if player.double_jump_timer <= 0 then
+            player.double_jump_enabled = false
+            player.max_jumps = 1
+        end
+    end
+end
 
--- change this if you use a different resolution like 64x64
+function collect_power_up()
+    player.double_jump_enabled = true
+    player.double_jump_timer = player.double_jump_duration
+    player.max_jumps = 2
+end
+
 screen_size = 128
 
--- calculate center position in x axis
--- this is assuming the text uses the system font which is 4px wide
 function text_x_pos(text)
     local letter_width = 4
-
-    -- first calculate how wide is the text
     local width = #text * letter_width
-    
-    -- if it's wider than the screen then it's multiple lines so we return 0 
     if width > screen_size then 
         return 0 
     end 
-
     return screen_size / 2 - flr(width / 2)
 end
 
--- prints black bordered text
 function write(text, x, y, color) 
     for i = 0, 2 do
         for j = 0, 2 do
@@ -196,24 +267,26 @@ function write(text, x, y, color)
     print(text, x + 1, y + 1, color)
 end 
 
--- returns if module of a/b == 0. equals to a % b == 0 in other languages
 function mod_zero(a, b)
    return a - flr(a / b) * b == 0
 end
 
--- change state function
 function change_state(new_state)
-    state = new_state
-    if state == game_states.game then
+    game.state = new_state
+    if game.state == game.states.game then
         _init_game()
     end
 end
 
--- initialize game state
 function _init_game()
-    player.y = 64
+    player.y = 88
     player.dy = 0
+    player.jump_count = 0
     obstacles = {}
-    score = 0
-    game_over = false
+    game.score = 0
+    game.game_over = false
+    player.double_jump_enabled = false
+    player.double_jump_timer = 0
+    player.max_jumps = 1
+    game.obstacle_count = 0
 end
