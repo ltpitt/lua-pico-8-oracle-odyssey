@@ -43,3 +43,6 @@ luac.out
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Mac files
+.DS_Store
