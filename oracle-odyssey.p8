@@ -34,6 +34,8 @@ player = {
 
 obstacles = {}
 
+power_ups = {}
+
 function _init()
     cls()
     game.state = game.states.splash
@@ -87,8 +89,8 @@ function update_game()
         handle_player_input()
         apply_gravity()
         update_obstacles()
+        update_power_ups()
         check_collisions()
-        update_power_up()
     else
         if btnp(4) then
             _init()
@@ -99,6 +101,7 @@ end
 function draw_game()
     draw_player()
     draw_obstacles()
+    draw_power_ups()
     draw_score()
 end
 
@@ -161,10 +164,18 @@ function add_obstacle()
     game.obstacle_count = game.obstacle_count + 1
 end
 
+function add_power_up()
+    local power_up_y = 100 - rnd(10)
+    add(power_ups, {x = 128, y = power_up_y, width = 8, height = 8})
+end
+
 function update_obstacles()
     game.obstacle_timer = game.obstacle_timer + 1
     if game.obstacle_timer > game.obstacle_interval then
         add_obstacle()
+        if rnd(1) < 0.1 then  -- 10% chance to spawn a power-up
+            add_power_up()
+        end
         game.obstacle_timer = 0
         game.obstacle_interval = 30 + rnd(60)
     end
@@ -177,6 +188,23 @@ function update_obstacles()
         end
     end
 end
+
+function update_power_ups()
+    for power_up in all(power_ups) do
+        power_up.x = power_up.x - 2
+        if power_up.x < -8 then
+            del(power_ups, power_up)
+        elseif player.x < power_up.x + power_up.width and
+               player.x + player.width > power_up.x and
+               player.y < power_up.y + power_up.height and
+               player.y + player.height > power_up.y then
+            collect_power_up()
+            del(power_ups, power_up)
+        end
+    end
+    decrease_power_up_timer()
+end
+
 
 function check_collisions()
     for obstacle in all(obstacles) do
@@ -200,13 +228,19 @@ function draw_obstacles()
     end
 end
 
+function draw_power_ups()
+    for power_up in all(power_ups) do
+        rectfill(power_up.x, power_up.y, power_up.x + power_up.width, power_up.y + power_up.height, 11)
+    end
+end
+
 function draw_score()
     print("score: "..game.score, 1, 1, 7)
 end
 
 function draw_debug_info()
-    print("obstacle count: "..game.obstacle_count, 1, 20, 11)
-    print("level: "..get_current_level(), 1, 30, 11)
+    print("obstacle count: "..game.obstacle_count, 1, 10, 11)
+    print("level: "..get_current_level(), 1, 20, 11)
 end
 
 function get_current_level()
@@ -232,7 +266,7 @@ function draw_gameover()
     print("press z to continue", 32, 30, 8)
 end
 
-function update_power_up()
+function decrease_power_up_timer()
     if player.double_jump_enabled then
         player.double_jump_timer = player.double_jump_timer - 1
         if player.double_jump_timer <= 0 then
