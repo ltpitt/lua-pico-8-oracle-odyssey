@@ -166,6 +166,7 @@ function update_obstacles()
     if game.obstacle_timer > game.obstacle_interval then
         add_obstacle()
         game.obstacle_timer = 0
+        game.obstacle_interval = 30 + rnd(60)
     end
 
     for obstacle in all(obstacles) do
