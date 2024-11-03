@@ -339,8 +339,10 @@ function get_current_level()
         return 3
     elseif game.obstacle_count < 50 then
         return 4
-    else
+    elseif game.obstacle_count < 75 then
         return 5
+    else
+        return 6
     end
 end
 
