@@ -38,6 +38,8 @@ power_ups = {}
 
 screen_size = 128
 
+ground_offset = 0
+
 function _init()
     cls()
     game.state = game.states.splash
@@ -142,6 +144,7 @@ function update_game()
         update_obstacles()
         update_power_ups()
         check_collisions()
+        update_ground()
     else
         if btnp(4) then
             _init()
@@ -191,6 +194,10 @@ function update_power_ups()
     decrease_power_up_timer()
 end
 
+function update_ground()
+    ground_offset = (ground_offset - 2) % screen_size  -- Move the ground to the left and wrap around
+end
+
 function update_gameover()
     if btnp(4) then
         change_state(game.states.splash)
@@ -201,11 +208,19 @@ end
 --  DRAW  --
 
 function draw_game()
+    draw_ground()
     draw_player()
     draw_obstacles()
     draw_power_ups()
     draw_score()
     draw_power_up_timer()
+end
+
+function draw_ground()
+    for i = 0, screen_size / 8 do
+        local x = (i * 8 + ground_offset) % screen_size
+        line(x, 97, x + 4, 97, 5)  -- Draw short segments to create the illusion of movement
+    end
 end
 
 function draw_player()
@@ -230,7 +245,7 @@ end
 
 function draw_power_up_timer()
     if player.double_jump_enabled then
-        local timer_text = "double jump: " .. flr(player.double_jump_timer / 60)  -- Convert frames to seconds
+        local timer_text = "double jump: " .. convert_frames_to_seconds(player.double_jump_timer)
         print(timer_text, screen_size - (#timer_text * 4) - 1, 1, 12)  -- Each character is 4 pixels wide
     end
 end
@@ -251,8 +266,8 @@ function draw_border()
 end
 
 function draw_debug_info()
-    print("obstacle count: "..game.obstacle_count, 1, 10, 11)
-    print("level: "..get_current_level(), 1, 20, 11)
+    -- print("obstacle count: "..game.obstacle_count, 1, 10, 11)
+    print("level: "..get_current_level(), 1, 10, 11)
 end
 
 
@@ -325,6 +340,10 @@ function change_state(new_state)
 end
 
 --  UTILS  --
+
+function convert_frames_to_seconds(frames)
+    return ceil(frames / 60)
+end
 
 function text_x_pos(text)
     local letter_width = 4
