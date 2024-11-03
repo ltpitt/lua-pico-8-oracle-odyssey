@@ -92,6 +92,7 @@ function add_obstacle()
     local obstacle_y = 88
     local obstacle_height = 8
     local obstacle_width = 8
+    local obstacle_dy = 0
 
     local random_value = rnd(1)
     local level = get_current_level()
@@ -114,6 +115,26 @@ function add_obstacle()
         elseif random_value < 0.5 then
             obstacle_width = 16
         end
+    elseif level == 4 then
+        if random_value < 0.1 then
+            obstacle_height = 16
+            obstacle_width = 16
+        elseif random_value < 0.3 then
+            obstacle_height = 16
+        elseif random_value < 0.5 then
+            obstacle_width = 16
+        end
+    elseif level == 5 then
+        obstacle_dy = 0.7
+        local starting_height = flr(rnd(2)) + 1  -- random 1 or 2
+        if(starting_height) == 1 then
+            obstacle_y = 80
+        else
+            obstacle_y = 60
+        end 
+        if random_value < 0.5 then
+            obstacle_height = 16
+        end
     else
         if random_value < 0.05 then
             obstacle_height = 16
@@ -125,7 +146,7 @@ function add_obstacle()
         end
     end
 
-    add(obstacles, {x = 128, y = obstacle_y - obstacle_height + 8, width = obstacle_width, height = obstacle_height})
+    add(obstacles, {x = 128, y = obstacle_y - obstacle_height + 8, width = obstacle_width, height = obstacle_height, dy = obstacle_dy})
     game.obstacle_count = game.obstacle_count + 1
 end
 
@@ -171,6 +192,12 @@ function update_obstacles()
 
     for obstacle in all(obstacles) do
         obstacle.x = obstacle.x - 2
+        if get_current_level() == 5 then
+            obstacle.y = obstacle.y + obstacle.dy
+            if obstacle.y < 50 or obstacle.y > 88 then
+                obstacle.dy = -obstacle.dy  -- Reverse direction when hitting top or bottom
+            end
+        end
         if obstacle.x < -8 then
             del(obstacles, obstacle)
             game.score = game.score + 1
@@ -245,7 +272,7 @@ end
 
 function draw_power_up_timer()
     if player.double_jump_enabled then
-        local timer_text = "double jump: " .. convert_frames_to_seconds(player.double_jump_timer)
+        local timer_text = "double jump: " ..convert_frames_to_seconds(player.double_jump_timer)
         print(timer_text, screen_size - (#timer_text * 4) - 1, 1, 12)  -- Each character is 4 pixels wide
     end
 end
@@ -310,8 +337,10 @@ function get_current_level()
         return 2
     elseif game.obstacle_count < 30 then
         return 3
-    else
+    elseif game.obstacle_count < 50 then
         return 4
+    else
+        return 5
     end
 end
 
