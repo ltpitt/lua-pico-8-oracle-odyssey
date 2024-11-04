@@ -4,12 +4,12 @@
 
 ## Features
 
-- **Endless Running**: Navigate through a never-ending landscape of Oracle Exadata systems.
+- **Endless running**: Navigate through a never-ending landscape of Oracle Exadata systems.
 - **Power-Ups**: Collect boosts like "Cache Boost" and "Query Optimizer" to enhance your performance.
-- **Boss Battles**: Face off against major incidents and rogue processes.
+- **Boss battles**: Face off against major incidents and rogue processes.
 - **Collectibles**: Gather Data Shards to unlock new characters and upgrades.
 - **Upgrades**: Improve your abilities to handle errors and optimize performance.
-- **Humorous Lore**: Enjoy lighthearted dialogues and cutscenes inspired by the daily life of a database engineer.
+- **Humorous lore**: Enjoy lighthearted dialogues and cutscenes inspired by the daily life of a database engineer.
 
 ## Getting Started
 
@@ -38,7 +38,7 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## Acknowledgements
 
-Special thanks to our team of database engineers for their inspiration and dedication. This game is a tribute to your hard work and perseverance.
+Special thanks to all Oracle Database Engineers for their inspiration and dedication. This game is a tribute to your hard work and perseverance.
 
 ---
 
