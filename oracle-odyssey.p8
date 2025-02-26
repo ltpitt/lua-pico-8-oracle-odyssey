@@ -1,7 +1,6 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
-
 game = {
     states = {
         splash = 1,
@@ -14,7 +13,7 @@ game = {
     obstacle_count = 0,
     obstacle_timer = 0,
     obstacle_interval = 60,
-    debug = true  -- enable or disable debug prints
+    debug = true
 }
 
 player = {
@@ -30,15 +29,17 @@ player = {
     double_jump_enabled = false,
     double_jump_timer = 0,
     double_jump_duration = 300,
-    sprite = 1
+    sprite = 1,
+    anim_timer = 0,
+    anim_speed = 0.2,
+    anim_frames = {0,1,2,3,4},
+    jump_frames = {5},
+    state = "walking"
 }
 
 obstacles = {}
-
 power_ups = {}
-
 screen_size = 128
-
 ground_offset = 0
 
 function _init()
@@ -72,22 +73,20 @@ end
 function _draw()
     cls()
     if game.debug then
-        draw_border()  -- draw the red border if debug is enabled
+        draw_border()
+        draw_debug_info()
     end
     if game.state == game.states.splash then   
         draw_splash()
     elseif game.state == game.states.game then
         draw_game()
         if game.debug then
-            draw_debug_info()  -- draw debug information if debug is enabled
+            draw_debug_info()
         end
     elseif game.state == game.states.gameover then
         draw_gameover()
     end
 end
-
-
---  ADD ENTITIES  --
 
 function add_obstacle()
     local obstacle_y = 88
@@ -127,7 +126,7 @@ function add_obstacle()
         end
     elseif level == 5 then
         obstacle_dy = 0.7
-        local starting_height = flr(rnd(2)) + 1  -- random 1 or 2
+        local starting_height = flr(rnd(2)) + 1
         if(starting_height) == 1 then
             obstacle_y = 80
         else
@@ -156,13 +155,9 @@ function add_power_up()
     add(power_ups, {x = 128, y = power_up_y, width = 8, height = 8})
 end
 
-
---  UPDATE  --
-
 function update_game()
     if not game.game_over then
-        handle_player_input()
-        apply_gravity()
+        update_player()
         update_obstacles()
         update_power_ups()
         check_collisions()
@@ -180,11 +175,31 @@ function update_splash()
     end
 end
 
+function update_player()
+    if btnp(4) and player.jump_count < player.max_jumps then
+        player.dy = player.jump_strength
+        player.jump_count = player.jump_count + 1
+        player.state = "jumping"
+        player.anim_timer = 0
+    end
+
+    player.dy = player.dy + player.gravity
+    player.y = player.y + player.dy
+
+    if player.y > 88 then
+        player.y = 88
+        player.dy = 0
+        player.jump_count = 0
+        player.state = "walking"
+        -- do not reset anim_timer here
+    end
+end
+
 function update_obstacles()
     game.obstacle_timer = game.obstacle_timer + 1
     if game.obstacle_timer > game.obstacle_interval then
         add_obstacle()
-        if rnd(1) < 0.1 then  -- 10% chance to spawn a power-up
+        if rnd(1) < 0.1 then
             add_power_up()
         end
         game.obstacle_timer = 0
@@ -196,7 +211,7 @@ function update_obstacles()
         if get_current_level() == 5 then
             obstacle.y = obstacle.y + obstacle.dy
             if obstacle.y < 50 or obstacle.y > 88 then
-                obstacle.dy = -obstacle.dy  -- Reverse direction when hitting top or bottom
+                obstacle.dy = -obstacle.dy
             end
         end
         if obstacle.x < -8 then
@@ -223,7 +238,7 @@ function update_power_ups()
 end
 
 function update_ground()
-    ground_offset = (ground_offset - 2) % screen_size  -- Move the ground to the left and wrap around
+    ground_offset = (ground_offset - 2) % screen_size
 end
 
 function update_gameover()
@@ -231,9 +246,6 @@ function update_gameover()
         change_state(game.states.splash)
     end
 end
-
-
---  DRAW  --
 
 function draw_game()
     draw_ground()
@@ -247,17 +259,23 @@ end
 function draw_ground()
     for i = 0, screen_size / 8 do
         local x = (i * 8 + ground_offset) % screen_size
-        line(x, 97, x + 4, 97, 5)  -- Draw short segments to create the illusion of movement
+        line(x, 97, x + 4, 97, 5)
     end
 end
 
 function draw_player()
-    -- rectfill(player.x, player.y, player.x + player.width, player.y + player.height, 7)
-    if player.sprite==1 then
-      player.sprite = 2
-    else
-      player.sprite = 1
+    player.anim_timer = player.anim_timer + player.anim_speed
+    local frames = player.anim_frames
+
+    if player.state == "jumping" then
+        frames = player.jump_frames
     end
+
+    if player.anim_timer >= #frames then
+        player.anim_timer = 0
+    end
+
+    player.sprite = frames[flr(player.anim_timer) + 1]
     spr(player.sprite, player.x, player.y)
 end
 
@@ -280,7 +298,7 @@ end
 function draw_power_up_timer()
     if player.double_jump_enabled then
         local timer_text = "double jump: " ..convert_frames_to_seconds(player.double_jump_timer)
-        print(timer_text, screen_size - (#timer_text * 4) - 1, 1, 12)  -- Each character is 4 pixels wide
+        print(timer_text, screen_size - (#timer_text * 4) - 1, 1, 12)
     end
 end
 
@@ -300,18 +318,16 @@ function draw_border()
 end
 
 function draw_debug_info()
-    -- print("obstacle count: "..game.obstacle_count, 1, 10, 11)
     print("level: "..get_current_level(), 1, 10, 11)
 end
-
-
---  GAME LOGIC  --
 
 function handle_player_input()
     if btnp(4) and player.jump_count < player.max_jumps then
         player.dy = player.jump_strength
         player.jump_count = player.jump_count + 1
-    end
+        player.state = "jumping"
+        player.anim_timer = 0
+   end
 end
 
 function apply_gravity()
@@ -322,6 +338,8 @@ function apply_gravity()
         player.y = 88
         player.dy = 0
         player.jump_count = 0
+        player.state = "walking"
+        player.anim_timer = 0
     end
 end
 
@@ -377,8 +395,6 @@ function change_state(new_state)
     end
 end
 
---  UTILS  --
-
 function convert_frames_to_seconds(frames)
     return ceil(frames / 60)
 end
@@ -405,11 +421,11 @@ function mod_zero(a, b)
    return a - flr(a / b) * b == 0
 end
 __gfx__
-05566000055660000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0547f7000547f7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-044ff000044ff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-044ff000044ff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-088ee000088ee0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-088ee000088ee0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-05ff500005ff50000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0f00f000f0000f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000088888000888880000000000088888000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00888880008888800844444008444440008888800844444000000000000000000000000000000000000000000000000000000000000000000000000000000000
+08444440084444400841441008414410084444408041441000000000000000000000000000000000000000000000000000000000000000000000000000000000
+08414410084144100824442088244420084144108024442000000000000000000000000000000000000000000000000000000000000000000000000000000000
+08244420082444208002220000022200082444200002220000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00022200000222000009994000499900800222000049994000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00099900000999400040000000000040004999000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00040400000400000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
