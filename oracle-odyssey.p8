@@ -9,12 +9,16 @@ game = {
     },
     state = 1,
     score = 0,
+    high_score = 0,
     game_over = false,
     obstacle_count = 0,
     obstacle_timer = 0,
     obstacle_interval = 60,
     debug = false,
-    current_music = 0
+    current_music = 0,
+    last_level = 1,
+    level_announcement = 0,
+    level_announce_duration = 120
 }
 
 player = {
@@ -47,6 +51,7 @@ ground_offset = 0
 
 function _init()
     cls()
+    game.high_score = dget(0)
     game.state = game.states.splash
 end
 
@@ -62,6 +67,8 @@ function _init_game()
     player.max_jumps = 1
     game.obstacle_count = 0
     player.start_x = player.x
+    game.last_level = 1
+    game.level_announcement = 0
 end
 
 function _update60()
@@ -168,6 +175,15 @@ function update_game()
     update_power_ups()
     check_collisions()
     game.score = game.score + 2
+    -- track level changes for announcement
+    local current_level = get_current_level()
+    if current_level ~= game.last_level then
+      game.last_level = current_level
+      game.level_announcement = game.level_announce_duration
+    end
+    if game.level_announcement > 0 then
+      game.level_announcement = game.level_announcement - 1
+    end
   else
     if btnp(4) then
       _init()
@@ -225,8 +241,9 @@ function update_obstacles()
         game.obstacle_interval = 30 + rnd(60)
     end
 
+    local spd = get_obstacle_speed()
     for obstacle in all(obstacles) do
-        obstacle.x = obstacle.x - 2
+        obstacle.x = obstacle.x - spd
         if get_current_level() == 5 then
             obstacle.y = obstacle.y + obstacle.dy
             if obstacle.y < 50 or obstacle.y > 88 then
@@ -241,8 +258,9 @@ function update_obstacles()
 end
 
 function update_power_ups()
+    local spd = get_obstacle_speed()
     for power_up in all(power_ups) do
-        power_up.x = power_up.x - 2
+        power_up.x = power_up.x - spd
         if power_up.x < -8 then
             del(power_ups, power_up)
         elseif player.x < power_up.x + power_up.width and
@@ -272,6 +290,7 @@ function draw_game()
     draw_obstacles()
     draw_power_ups()
     draw_score()
+    draw_level_info()
     draw_power_up_timer()
 end
 
@@ -350,14 +369,19 @@ end
 
 function draw_gameover()
     write_c("game over!", 40, 8)
-    write_c("score: "..game.score, 60, 8)
-    write_c("press z to continue", 80, 8)
+    write_c("score: "..game.score, 55, 8)
+    write_c("best: "..game.high_score, 70, 7)
+    write_c("press z to continue", 85, 8)
 end
 
 function draw_splash() 
     rectfill(0, 0, screen_size, screen_size, 11)
     local text = "press z to start"
     write(text, text_x_pos(text), 52, 7)
+    if game.high_score > 0 then
+        local hs_text = "best: "..game.high_score
+        write_c(hs_text, 65, 7)
+    end
 end
 
 function draw_border()
@@ -396,6 +420,10 @@ function check_collisions()
            player.x + player.width > obstacle.x and
            player.y < obstacle.y + obstacle.height and
            player.y + player.height > obstacle.y then
+            if game.score > game.high_score then
+                game.high_score = game.score
+                dset(0, game.high_score)
+            end
             game.game_over = true
             change_state(game.states.gameover)
         end
@@ -415,6 +443,23 @@ function get_current_level()
         return 5
     else
         return 6
+    end
+end
+
+function get_obstacle_speed()
+    local speeds = {2, 2.5, 3, 3.5, 4, 4.5}
+    local level = min(get_current_level(), #speeds)
+    return speeds[level]
+end
+
+function draw_level_info()
+    local level = get_current_level()
+    print("level: "..level, 2, 10, 11)
+    if game.level_announcement > 0 then
+        local y = 38
+        local msg = "level "..level.."!"
+        local col = flr(game.level_announcement / 8) % 2 == 0 and 7 or 10
+        write_c(msg, y, col)
     end
 end
 
