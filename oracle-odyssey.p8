@@ -18,7 +18,22 @@ game = {
     current_music = 0,
     last_level = 1,
     level_announcement = 0,
-    level_announce_duration = 120
+    level_announce_duration = 120,
+    level_quote = ""
+}
+
+-- level announcement quotes (devops themed humor)
+level_quotes = {
+    "approve access?",
+    "need approval now",
+    "can deploy?",
+    "is env free?",
+    "need server pwd",
+    "who has access",
+    "api broken again",
+    "worked yesterday",
+    "pls review pr",
+    "tiny pr, promise"
 }
 
 player = {
@@ -52,6 +67,7 @@ ground_offset = 0
 function _init()
     cartdata("oracle_odyssey")
     game.high_score = dget(0)
+    game.level_quote = ""
     game.state = game.states.splash
 end
 
@@ -69,6 +85,7 @@ function _init_game()
     player.start_x = player.x
     game.last_level = 1
     game.level_announcement = 0
+    game.level_quote = ""
 end
 
 function _update60()
@@ -180,6 +197,8 @@ function update_game()
     if current_level ~= game.last_level then
       game.last_level = current_level
       game.level_announcement = game.level_announce_duration
+      -- pick a random quote
+      game.level_quote = level_quotes[flr(rnd(#level_quotes)) + 1]
     end
     if game.level_announcement > 0 then
       game.level_announcement = game.level_announcement - 1
@@ -280,7 +299,8 @@ function update_ground()
 end
 
 function update_gameover()
-    if btnp(4) then
+    -- accept any button press: left(0), right(1), up(2), down(3), z(4), x(5)
+    if btnp(0) or btnp(1) or btnp(2) or btnp(3) or btnp(4) or btnp(5) then
         change_state(game.states.splash)
     end
 end
@@ -340,7 +360,21 @@ function draw_power_ups()
 end
 
 function draw_score()
-    print("score: "..game.score, 2, 2, 7)
+    -- Arcade style: SCORE on top-left with leading zeros
+    local score_str = tostr(game.score)
+    while #score_str < 6 do
+        score_str = "0"..score_str
+    end
+    print("score "..score_str, 2, 2, 7)
+    
+    -- High score on top-right (classic arcade)
+    local hi_str = tostr(game.high_score)
+    while #hi_str < 6 do
+        hi_str = "0"..hi_str
+    end
+    local hi_text = "hi "..hi_str
+    local hi_x = screen_size - (#hi_text * 4) - 2
+    print(hi_text, hi_x, 2, 7)
 end
 
 function old_draw_power_up_timer()
@@ -355,7 +389,7 @@ function draw_power_up_timer()
         local timer_text = "double jump: " .. convert_frames_to_seconds(player.double_jump_timer)
         local text_width = #timer_text * 4
         local x = (screen_size - text_width) / 2
-        local y = (screen_size / 2) - 14  -- move 10 pixels up
+        local y = 105  -- near the bottom, above the floor
         local color = 12
 
         -- draw a flashing background rectangle
@@ -371,8 +405,8 @@ end
 function draw_gameover()
     write_c("game over!", 40, 8)
     write_c("score: "..game.score, 55, 8)
-    write_c("best: "..game.high_score, 70, 7)
-    write_c("press z to continue", 85, 8)
+    write_c("hi: "..game.high_score, 70, 7)
+    write_c("press any button", 85, 8)
 end
 
 function draw_splash() 
@@ -459,13 +493,15 @@ function get_obstacle_speed()
 end
 
 function draw_level_info()
+    -- Only show level announcement, not constant level display
     local level = get_current_level()
-    print("level: "..level, 2, 10, 11)
     if game.level_announcement > 0 then
         local y = 38
-        local msg = "level "..level.."!"
+        local msg = "level "..level
         local col = flr(game.level_announcement / 8) % 2 == 0 and 7 or 10
         write_c(msg, y, col)
+        -- show random quote below level announcement with quotes
+        write_c('"'..game.level_quote..'"', y + 10, col)
     end
 end
 
