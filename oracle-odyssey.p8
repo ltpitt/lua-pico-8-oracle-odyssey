@@ -403,10 +403,34 @@ function draw_power_up_timer()
 end
 
 function draw_gameover()
-    write_c("game over!", 40, 8)
-    write_c("score: "..game.score, 55, 8)
-    write_c("hi: "..game.high_score, 70, 7)
-    write_c("press any button", 85, 8)
+    -- Simple dark background for clean look
+    rectfill(0, 0, screen_size, screen_size, 1)
+    
+    -- Game Over title with arcade styling
+    local title = "game over!"
+    write(title, text_x_pos(title), 30, 8)
+    
+    -- High score display first
+    local hi_str = tostr(game.high_score)
+    while #hi_str < 6 do
+        hi_str = "0"..hi_str
+    end
+    local hi_text = "hi: "..hi_str
+    write(hi_text, text_x_pos(hi_text), 50, 7)
+    
+    -- Score display second
+    local score_str = tostr(game.score)
+    while #score_str < 6 do
+        score_str = "0"..score_str
+    end
+    local score_text = "score: "..score_str
+    write(score_text, text_x_pos(score_text), 65, 7)
+    
+    -- Blinking "press any button"
+    if flr(time() * 4) % 2 == 0 then
+        local prompt = "press any button"
+        write(prompt, text_x_pos(prompt), 105, 9)
+    end
 end
 
 function draw_splash() 
@@ -420,7 +444,7 @@ function draw_splash()
     -- blinking text overlay (arcade style - steady frequent blink)
     if flr(time() * 4) % 2 == 0 then
         local text = "press any button"
-        write(text, text_x_pos(text), 105, 9)
+        write(text, text_x_pos(text), 105, 8)
     end
 end
 
