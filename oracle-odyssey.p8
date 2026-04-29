@@ -1,11 +1,27 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
+
+-- available characters for initial entry
+alphabet = "abcdefghijklmnopqrstuvwxyz "
+
+-- find char position in alphabet
+function find_in_alphabet(c)
+    for i = 1, #alphabet do
+        if sub(alphabet, i, i) == c then
+            return i
+        end
+    end
+    return 1
+end
+
 game = {
     states = {
         splash = 1,
         game = 2,
-        gameover = 3
+        gameover = 3,
+        initial_entry = 4,
+        hall_of_fame = 5
     },
     state = 1,
     score = 0,
@@ -19,7 +35,9 @@ game = {
     last_level = 1,
     level_announcement = 0,
     level_announce_duration = 120,
-    level_quote = ""
+    level_quote = "",
+    player_initials = "aaa",
+    initial_pos = 1
 }
 
 -- level announcement quotes (devops themed humor)
@@ -34,6 +52,15 @@ level_quotes = {
     "worked yesterday",
     "pls review pr",
     "tiny pr, promise"
+}
+
+-- hall of fame (top 5 scores)
+hall_of_fame = {
+    {name = "aaa", score = 0},
+    {name = "bbb", score = 0},
+    {name = "ccc", score = 0},
+    {name = "ddd", score = 0},
+    {name = "eee", score = 0}
 }
 
 player = {
@@ -68,6 +95,8 @@ function _init()
     cartdata("oracle_odyssey")
     game.high_score = dget(0)
     game.level_quote = ""
+    game.player_initials = "aaa"
+    game.initial_pos = 1
     game.state = game.states.splash
 end
 
@@ -95,6 +124,10 @@ function _update60()
         update_game() 
     elseif game.state == game.states.gameover then
         update_gameover()
+    elseif game.state == game.states.initial_entry then
+        update_initial_entry()
+    elseif game.state == game.states.hall_of_fame then
+        update_hall_of_fame()
     end
 end
 
@@ -110,6 +143,10 @@ function _draw()
         draw_game()
     elseif game.state == game.states.gameover then
         draw_gameover()
+    elseif game.state == game.states.initial_entry then
+        draw_initial_entry()
+    elseif game.state == game.states.hall_of_fame then
+        draw_hall_of_fame()
     end
 end
 
@@ -216,6 +253,13 @@ function update_splash()
     start_music(6)
     game.current_music = 6
   end
+  
+  -- cheat: hold left + press z to reset high score
+  if btn(0) and btnp(4) then
+    game.high_score = 0
+    dset(0, 0)
+  end
+  
   -- accept any button press: left(0), right(1), up(2), down(3), z(4), x(5)
   if btnp(0) or btnp(1) or btnp(2) or btnp(3) or btnp(4) or btnp(5) then 
     change_state(game.states.game)
@@ -410,7 +454,7 @@ function draw_gameover()
     local title = "game over!"
     write(title, text_x_pos(title), 30, 8)
     
-    -- High score display first
+    -- High score display
     local hi_str = tostr(game.high_score)
     while #hi_str < 6 do
         hi_str = "0"..hi_str
@@ -418,7 +462,7 @@ function draw_gameover()
     local hi_text = "hi: "..hi_str
     write(hi_text, text_x_pos(hi_text), 50, 7)
     
-    -- Score display second
+    -- Score display
     local score_str = tostr(game.score)
     while #score_str < 6 do
         score_str = "0"..score_str
@@ -427,6 +471,138 @@ function draw_gameover()
     write(score_text, text_x_pos(score_text), 65, 7)
     
     -- Blinking "press any button"
+    if flr(time() * 4) % 2 == 0 then
+        local prompt = "press any button"
+        write(prompt, text_x_pos(prompt), 105, 9)
+    end
+end
+
+function update_initial_entry()
+    -- ensure initials are initialized
+    if not game.player_initials then
+        game.player_initials = "aaa"
+    end
+    if not game.initial_pos or game.initial_pos < 1 then
+        game.initial_pos = 1
+    end
+    
+    -- left/right arrows to move between 3 letters
+    if btnp(0) then  -- left
+        game.initial_pos = game.initial_pos - 1
+        if game.initial_pos < 1 then
+            game.initial_pos = 3
+        end
+    elseif btnp(1) then  -- right
+        game.initial_pos = game.initial_pos + 1
+        if game.initial_pos > 3 then
+            game.initial_pos = 1
+        end
+    end
+    
+    -- up/down arrows to change letter
+    local pos = game.initial_pos
+    if btnp(2) then  -- up (next letter)
+        local current_char = sub(game.player_initials, pos, pos)
+        local idx = find_in_alphabet(current_char)
+        if idx < #alphabet then
+            idx = idx + 1
+        else
+            idx = 1
+        end
+        local before = sub(game.player_initials, 1, pos - 1)
+        local after = sub(game.player_initials, pos + 1)
+        game.player_initials = before .. sub(alphabet, idx, idx) .. after
+    elseif btnp(3) then  -- down (previous letter)
+        local current_char = sub(game.player_initials, pos, pos)
+        local idx = find_in_alphabet(current_char)
+        if idx > 1 then
+            idx = idx - 1
+        else
+            idx = #alphabet
+        end
+        local before = sub(game.player_initials, 1, pos - 1)
+        local after = sub(game.player_initials, pos + 1)
+        game.player_initials = before .. sub(alphabet, idx, idx) .. after
+    end
+    
+    -- z/x to confirm and add to hall of fame
+    if btnp(4) or btnp(5) then  -- z or x
+        add_to_hof(game.player_initials, game.score)
+        change_state(game.states.hall_of_fame)
+    end
+end
+
+function draw_initial_entry()
+    -- dark background
+    rectfill(0, 0, screen_size, screen_size, 1)
+    
+    -- title
+    write("enter initials", 32, 20, 7)
+    
+    -- score display
+    local score_str = tostr(game.score)
+    while #score_str < 6 do
+        score_str = "0"..score_str
+    end
+    write(score_str, text_x_pos(score_str), 35, 8)
+    
+    -- get initials
+    local initials = game.player_initials
+    if not initials then
+        initials = "aaa"
+    end
+    
+    -- draw each letter with positioning
+    local x_base = 56
+    for i = 1, 3 do
+        local x = x_base + (i - 1) * 8
+        local letter = sub(initials, i, i)
+        if i == game.initial_pos then
+            if flr(time() * 4) % 2 == 0 then
+                rectfill(x - 1, 53, x + 5, 62, 9)
+                write(letter, x, 55, 0)
+            else
+                write(letter, x, 55, 9)
+            end
+        else
+            write(letter, x, 55, 7)
+        end
+    end
+    
+    -- instructions
+    write("up/down: change", 5, 75, 7)
+    write("left/right: move", 5, 85, 7)
+    write("z: confirm", 5, 95, 7)
+end
+
+function update_hall_of_fame()
+    -- accept any button to go back to splash
+    if btnp(0) or btnp(1) or btnp(2) or btnp(3) or btnp(4) or btnp(5) then
+        change_state(game.states.splash)
+    end
+end
+
+function draw_hall_of_fame()
+    -- dark background
+    rectfill(0, 0, screen_size, screen_size, 1)
+    
+    -- title
+    local title = "hall of fame"
+    write(title, text_x_pos(title), 5, 8)
+    
+    -- display top 5
+    for i = 1, 5 do
+        local entry = hall_of_fame[i]
+        local rank_str = tostr(i)
+        local score_str = tostr(entry.score)
+        while #score_str < 6 do
+            score_str = "0"..score_str
+        end
+        local entry_text = rank_str .. ". " .. entry.name .. " " .. score_str
+        write(entry_text, text_x_pos(entry_text), 18 + i * 12, 7)
+    end
+    
+    -- blinking prompt
     if flr(time() * 4) % 2 == 0 then
         local prompt = "press any button"
         write(prompt, text_x_pos(prompt), 105, 9)
@@ -488,8 +664,15 @@ function check_collisions()
                 game.high_score = game.score
                 dset(0, game.high_score)
             end
+            -- check if qualifies for hall of fame (top 5)
+            if qualifies_for_hof(game.score) then
+                game.player_initials = "aaa"
+                game.initial_pos = 1
+                change_state(game.states.initial_entry)
+            else
+                change_state(game.states.gameover)
+            end
             game.game_over = true
-            change_state(game.states.gameover)
         end
     end
 end
@@ -555,6 +738,25 @@ end
 
 function convert_frames_to_seconds(frames)
     return ceil(frames / 60)
+end
+
+function qualifies_for_hof(score)
+    -- check if score beats the lowest entry
+    return score > hall_of_fame[5].score
+end
+
+function add_to_hof(name, score)
+    -- insert at correct position
+    for i = 1, 5 do
+        if score > hall_of_fame[i].score then
+            -- shift entries down
+            for j = 5, i + 1, -1 do
+                hall_of_fame[j] = hall_of_fame[j - 1]
+            end
+            hall_of_fame[i] = {name = name, score = score}
+            return
+        end
+    end
 end
 
 function text_x_pos(text)
