@@ -3,7 +3,7 @@ version 42
 __lua__
 
 -- available characters for initial entry
-alphabet = "abcdefghijklmnopqrstuvwxyz "
+alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 -- find char position in alphabet
 function find_in_alphabet(c)
@@ -56,11 +56,11 @@ level_quotes = {
 
 -- hall of fame (top 5 scores)
 hall_of_fame = {
-    {name = "aaa", score = 0},
-    {name = "bbb", score = 0},
-    {name = "ccc", score = 0},
-    {name = "ddd", score = 0},
-    {name = "eee", score = 0}
+    {name = "---", score = 0},
+    {name = "---", score = 0},
+    {name = "---", score = 0},
+    {name = "---", score = 0},
+    {name = "---", score = 0}
 }
 
 player = {
@@ -254,10 +254,9 @@ function update_splash()
     game.current_music = 6
   end
   
-  -- cheat: hold left + press z to reset high score
-  if btn(0) and btnp(4) then
-    game.high_score = 0
-    dset(0, 0)
+  -- cheat: hold up + down + press z to reset all scores
+  if btn(2) and btn(3) and btnp(4) then
+    reset_all_scores()
   end
   
   -- accept any button press: left(0), right(1), up(2), down(3), z(4), x(5)
@@ -558,12 +557,9 @@ function draw_initial_entry()
         local x = x_base + (i - 1) * 8
         local letter = sub(initials, i, i)
         if i == game.initial_pos then
-            if flr(time() * 4) % 2 == 0 then
-                rectfill(x - 1, 53, x + 5, 62, 9)
-                write(letter, x, 55, 0)
-            else
-                write(letter, x, 55, 9)
-            end
+            -- always show highlighted box with good contrast
+            rectfill(x - 2, 52, x + 6, 63, 9)  -- orange box
+            write(letter, x, 55, 7)
         else
             write(letter, x, 55, 7)
         end
@@ -756,6 +752,17 @@ function add_to_hof(name, score)
             hall_of_fame[i] = {name = name, score = score}
             return
         end
+    end
+end
+
+function reset_all_scores()
+    -- reset high score
+    game.high_score = 0
+    dset(0, 0)
+    
+    -- reset hall of fame
+    for i = 1, 5 do
+        hall_of_fame[i] = {name = "---", score = 0}
     end
 end
 
