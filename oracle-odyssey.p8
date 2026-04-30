@@ -42,14 +42,14 @@ game = {
 
 -- level announcement quotes (devops themed humor)
 level_quotes = {
-    "approve access?",
-    "need approval now",
-    "can deploy?",
-    "is env free?",
-    "need server pwd",
-    "who has access",
-    "api broken again",
-    "worked yesterday",
+    "can anyone approve access?",
+    "i'd need approval now",
+    "can i deploy?",
+    "is acc env free?",
+    "i need server pwd",
+    "who has access?",
+    "api is broken again...",
+    "it worked yesterday...",
     "pls review pr",
     "tiny pr, promise"
 }
