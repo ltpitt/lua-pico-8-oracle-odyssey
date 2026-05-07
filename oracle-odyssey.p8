@@ -835,7 +835,7 @@ end
 
 function spawn_dust(x, y, inward)
     inward = inward or false
-    local count = inward and (2 + flr(rnd(2))) or (3 + flr(rnd(3)))
+    local count = inward and (2 + flr(rnd(2))) or (3 + flr(rnd(4)))
     local life_min = inward and 5 or 8
     local life_max = inward and 8 or 12
 
