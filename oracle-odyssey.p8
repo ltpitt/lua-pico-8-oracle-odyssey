@@ -96,6 +96,12 @@ flash_timer = 0
 function _init()
     cartdata("oracle_odyssey")
     game.high_score = dget(0)
+    for i = 1, 5 do
+        local score = dget(i)
+        if score > 0 then
+            hall_of_fame[i] = {name = decode_name(dget(i + 5)), score = score}
+        end
+    end
     game.level_quote = ""
     game.player_initials = "aaa"
     game.initial_pos = 1
@@ -762,27 +768,29 @@ function qualifies_for_hof(score)
 end
 
 function add_to_hof(name, score)
-    -- insert at correct position
     for i = 1, 5 do
         if score > hall_of_fame[i].score then
-            -- shift entries down
             for j = 5, i + 1, -1 do
                 hall_of_fame[j] = hall_of_fame[j - 1]
             end
             hall_of_fame[i] = {name = name, score = score}
+            for k = 1, 5 do
+                dset(k, hall_of_fame[k].score)
+                dset(k + 5, encode_name(hall_of_fame[k].name))
+            end
             return
         end
     end
 end
 
 function reset_all_scores()
-    -- reset high score
     game.high_score = 0
     dset(0, 0)
-    
-    -- reset hall of fame
     for i = 1, 5 do
         hall_of_fame[i] = {name = "---", score = 0}
+    end
+    for i = 1, 10 do
+        dset(i, 0)
     end
 end
 
@@ -853,6 +861,21 @@ function draw_particles()
     for p in all(particles) do
         pset(p.x, p.y, p.color)
     end
+end
+
+function encode_name(name)
+    local c1 = find_in_alphabet(sub(name, 1, 1)) - 1
+    local c2 = find_in_alphabet(sub(name, 2, 2)) - 1
+    local c3 = find_in_alphabet(sub(name, 3, 3)) - 1
+    return c1 * 676 + c2 * 26 + c3
+end
+
+function decode_name(n)
+    local c3 = n % 26
+    n = flr(n / 26)
+    local c2 = n % 26
+    local c1 = flr(n / 26)
+    return sub(alphabet, c1 + 1, c1 + 1) .. sub(alphabet, c2 + 1, c2 + 1) .. sub(alphabet, c3 + 1, c3 + 1)
 end
 
 __gfx__
