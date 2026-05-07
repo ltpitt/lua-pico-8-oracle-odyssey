@@ -306,7 +306,7 @@ function update_player()
 
     if player.y > 88 then
         if player.state == "jumping" then
-            spawn_dust(player.x + 4, 96)
+            spawn_dust(player.x, 96)
         end
         player.y = 88
         player.dy = 0
@@ -373,7 +373,7 @@ end
 
 function draw_game()
     draw_background()
-    draw_player()
+    -- draw_player()
     draw_obstacles()
     draw_power_ups()
     draw_particles()
