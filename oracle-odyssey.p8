@@ -90,6 +90,8 @@ obstacles = {}
 power_ups = {}
 screen_size = 128
 ground_offset = 0
+particles = {}
+flash_timer = 0
 
 function _init()
     cartdata("oracle_odyssey")
@@ -115,6 +117,8 @@ function _init_game()
     game.last_level = 1
     game.level_announcement = 0
     game.level_quote = ""
+    particles = {}
+    flash_timer = 0
 end
 
 function _update60()
@@ -227,6 +231,7 @@ function update_game()
     update_player()
     update_obstacles()
     update_power_ups()
+    update_particles()
     check_collisions()
     game.score = game.score + 2
     -- track level changes for announcement
@@ -353,6 +358,7 @@ function draw_game()
     draw_player()
     draw_obstacles()
     draw_power_ups()
+    draw_particles()
     draw_score()
     draw_level_info()
     draw_power_up_timer()
@@ -801,6 +807,40 @@ end
 function write_c(s,_y,inner_color)
  print(s,64-#s*4/2,_y,inner_color)
 end
+
+function spawn_dust(x, y)
+    for i = 1, 3 + flr(rnd(3)) do
+        add(particles, {
+            x = x,
+            y = y,
+            dx = rnd(1) - 0.5,
+            dy = -0.1 - rnd(0.2),
+            life = 8 + flr(rnd(5)),
+            color = 6
+        })
+    end
+end
+
+function update_particles()
+    for p in all(particles) do
+        p.x = p.x + p.dx
+        p.y = p.y + p.dy
+        p.life = p.life - 1
+        if p.life < 4 then
+            p.color = 5
+        end
+        if p.life <= 0 then
+            del(particles, p)
+        end
+    end
+end
+
+function draw_particles()
+    for p in all(particles) do
+        pset(p.x, p.y, p.color)
+    end
+end
+
 __gfx__
 0000000000000000008888800088888000000000808888800088888000000000000000000000000000000000000000000000000011111111dddddddd00000000
 0088888000888880084444400844444000888880804444400844444000000000000000000000000000000000000000000000000011111111dddddddd00000000
