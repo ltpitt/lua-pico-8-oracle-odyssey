@@ -95,7 +95,9 @@ particles = {}
 flash_timer = 0
 fade_timer = 0
 fading = false
+fade_in = false
 fade_duration = 4
+next_state = nil
 
 function _init()
     cartdata("oracle_odyssey")
@@ -143,6 +145,26 @@ function _update60()
         update_initial_entry()
     elseif game.state == game.states.hall_of_fame then
         update_hall_of_fame()
+    end
+
+    if fading then
+        fade_timer = fade_timer - 1
+        if fade_timer <= 0 then
+            pal()
+            if next_state then
+                game.state = next_state
+                next_state = nil
+                if game.state == game.states.game then
+                    _init_game()
+                end
+                fade_in = true
+                fade_timer = fade_duration
+            else
+                fading = false
+                fade_in = false
+                fade_timer = 0
+            end
+        end
     end
 end
 
@@ -272,7 +294,7 @@ function update_game()
       game.level_announcement = game.level_announcement - 1
     end
   else
-    if btnp(4) then
+    if btnp(4) and not fading then
       _init()
     end
   end
@@ -408,6 +430,9 @@ end
 
 function draw_fade_overlay()
     local progress = (fade_duration - fade_timer) / fade_duration
+    if fade_in then
+        progress = fade_timer / fade_duration
+    end
 
     if progress >= 0.75 then
         rectfill(0, 0, screen_size - 1, screen_size - 1, 0)
@@ -422,13 +447,6 @@ function draw_fade_overlay()
     elseif progress > 0 then
         fillp(0b1000000000100000)
         rectfill(0, 0, screen_size - 1, screen_size - 1, 0)
-        fillp()
-    end
-
-    fade_timer = fade_timer - 1
-    if fade_timer <= 0 then
-        fading = false
-        fade_timer = 0
         fillp()
     end
 end
@@ -803,10 +821,14 @@ function decrease_power_up_timer()
 end
 
 function change_state(new_state)
-    game.state = new_state
-    if game.state == game.states.game then
-        _init_game()
+    if game.state == new_state or fading then
+        return
     end
+
+    fading = true
+    fade_in = false
+    fade_timer = fade_duration
+    next_state = new_state
 end
 
 function convert_frames_to_seconds(frames)
