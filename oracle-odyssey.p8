@@ -83,7 +83,8 @@ player = {
     jump_frames = {5},
     jump_up_frames = {6},
     jump_down_frames = {5},
-    state = "walking"
+    state = "walking",
+    spawned_upward_dust = false
 }
 
 obstacles = {}
@@ -118,6 +119,7 @@ function _init_game()
     player.double_jump_enabled = false
     player.double_jump_timer = 0
     player.max_jumps = 1
+    player.spawned_upward_dust = false
     game.obstacle_count = 0
     player.start_x = player.x
     game.last_level = 1
@@ -291,13 +293,18 @@ function update_player()
         player.jump_count = player.jump_count + 1
         player.state = "jumping"
         player.anim_timer = 0
+        player.spawned_upward_dust = false
         sfx(1, 3)
-        spawn_dust(player.x, 96, true, -1)
-        spawn_dust(player.x + 8, 96, true, 1)
     end
 
     player.dy = player.dy + player.gravity
     player.y = player.y + player.dy
+
+    if player.dy < 0 and not player.spawned_upward_dust then
+        spawn_dust(player.x, 96, true, -1)
+        spawn_dust(player.x + 8, 96, true, 1)
+        player.spawned_upward_dust = true
+    end
 
     -- check if the player is moving up or down
     if player.dy < 0 then
@@ -315,6 +322,7 @@ function update_player()
         player.dy = 0
         player.jump_count = 0
         player.state = "walking"
+        player.spawned_upward_dust = false
         player.sprite = player.walk_sprite
     end
 end
