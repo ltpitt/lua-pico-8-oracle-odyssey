@@ -168,6 +168,12 @@ function _draw()
     elseif game.state == game.states.hall_of_fame then
         draw_hall_of_fame()
     end
+    if fading then
+        draw_fade_overlay()
+    end
+    if game.state == game.states.game then
+        draw_game_ui()
+    end
     pal()
     if flash_timer > 0 then
         flash_timer = flash_timer - 1
@@ -392,9 +398,39 @@ function draw_game()
     draw_obstacles()
     draw_power_ups()
     draw_particles()
+end
+
+function draw_game_ui()
     draw_score()
     draw_level_info()
     draw_power_up_timer()
+end
+
+function draw_fade_overlay()
+    local progress = (fade_duration - fade_timer) / fade_duration
+
+    if progress >= 0.75 then
+        rectfill(0, 0, screen_size - 1, screen_size - 1, 0)
+    elseif progress >= 0.5 then
+        fillp(0b1111011111011110)
+        rectfill(0, 0, screen_size - 1, screen_size - 1, 0)
+        fillp()
+    elseif progress >= 0.25 then
+        fillp(0b1010010110100101)
+        rectfill(0, 0, screen_size - 1, screen_size - 1, 0)
+        fillp()
+    elseif progress > 0 then
+        fillp(0b1000000000100000)
+        rectfill(0, 0, screen_size - 1, screen_size - 1, 0)
+        fillp()
+    end
+
+    fade_timer = fade_timer - 1
+    if fade_timer <= 0 then
+        fading = false
+        fade_timer = 0
+        fillp()
+    end
 end
 
 function draw_background()
