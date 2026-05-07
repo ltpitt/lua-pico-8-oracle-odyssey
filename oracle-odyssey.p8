@@ -276,6 +276,7 @@ function update_player()
         player.jump_count = player.jump_count + 1
         player.state = "jumping"
         player.anim_timer = 0
+        sfx(1, 3)
     end
 
     player.dy = player.dy + player.gravity
@@ -289,12 +290,14 @@ function update_player()
     end
 
     if player.y > 88 then
+        if player.state == "jumping" then
+            spawn_dust(player.x, 88)
+        end
         player.y = 88
         player.dy = 0
         player.jump_count = 0
         player.state = "walking"
-        -- do not reset anim_timer here
-        player.sprite = player.walk_sprite -- set sprite for walking
+        player.sprite = player.walk_sprite
     end
 end
 
