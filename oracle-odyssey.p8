@@ -292,8 +292,8 @@ function update_player()
         player.state = "jumping"
         player.anim_timer = 0
         sfx(1, 3)
-        spawn_dust(player.x, 96, true, 1)
-        spawn_dust(player.x + 8, 96, true, -1)
+        spawn_dust(player.x, 96, true, -1)
+        spawn_dust(player.x + 8, 96, true, 1)
     end
 
     player.dy = player.dy + player.gravity
