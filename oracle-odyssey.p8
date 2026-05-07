@@ -93,6 +93,9 @@ screen_size = 128
 ground_offset = 0
 particles = {}
 flash_timer = 0
+fade_timer = 0
+fading = false
+fade_duration = 4
 
 function _init()
     cartdata("oracle_odyssey")
