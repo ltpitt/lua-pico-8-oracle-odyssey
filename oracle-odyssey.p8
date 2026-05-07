@@ -292,7 +292,8 @@ function update_player()
         player.state = "jumping"
         player.anim_timer = 0
         sfx(1, 3)
-        spawn_dust(player.x + 4, 96, true)
+        spawn_dust(player.x, 96, true, 1)
+        spawn_dust(player.x + 8, 96, true, -1)
     end
 
     player.dy = player.dy + player.gravity
@@ -832,8 +833,9 @@ function write_c(s,_y,inner_color)
  print(s,64-#s*4/2,_y,inner_color)
 end
 
-function spawn_dust(x, y, inward)
+function spawn_dust(x, y, inward, direction)
     inward = inward or false
+    direction = direction or 0
     local count = inward and (2 + flr(rnd(2))) or (3 + flr(rnd(4)))
     local life_min = inward and 5 or 8
     local life_max = inward and 8 or 12
@@ -841,9 +843,15 @@ function spawn_dust(x, y, inward)
     for i = 1, count do
         local dx
         if inward then
-            dx = -0.8 + rnd(0.5)  -- range -0.8 to -0.3, leftward
+            if direction > 0 then
+                dx = 0.3 + rnd(0.5)   -- range 0.3 to 0.8, rightward
+            elseif direction < 0 then
+                dx = -0.8 + rnd(0.5)  -- range -0.8 to -0.3, leftward
+            else
+                dx = rnd(1) - 0.5     -- range ±0.5, unbiased
+            end
         else
-            dx = rnd(1) - 0.5     -- range ±0.5, outward spread
+            dx = rnd(1) - 0.5         -- range ±0.5, outward spread
         end
 
         local dy = inward and (-0.2 - rnd(0.2)) or (-0.1 - rnd(0.2))
