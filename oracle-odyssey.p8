@@ -137,6 +137,11 @@ end
 
 function _draw()
     cls()
+    if flash_timer == 3 then
+        for i = 0, 15 do pal(i, 7) end
+    elseif flash_timer == 2 then
+        for i = 0, 15 do pal(i, 10) end
+    end
     if game.debug then
         draw_border()
         draw_debug_info()
@@ -151,6 +156,10 @@ function _draw()
         draw_initial_entry()
     elseif game.state == game.states.hall_of_fame then
         draw_hall_of_fame()
+    end
+    pal()
+    if flash_timer > 0 then
+        flash_timer = flash_timer - 1
     end
 end
 
@@ -721,6 +730,8 @@ function collect_power_up()
     player.double_jump_enabled = true
     player.double_jump_timer = player.double_jump_duration
     player.max_jumps = 2
+    sfx(2, 3)
+    flash_timer = 3
 end
 
 function decrease_power_up_timer()
