@@ -301,8 +301,8 @@ function update_player()
     player.y = player.y + player.dy
 
     if player.dy < 0 and not player.spawned_upward_dust then
-        spawn_dust(player.x, 96, true, -1)
-        spawn_dust(player.x + 8, 96, true, 1)
+        spawn_dust(player.x, 96, true)
+        spawn_dust(player.x + 8, 96, true)
         player.spawned_upward_dust = true
     end
 
@@ -841,28 +841,15 @@ function write_c(s,_y,inner_color)
  print(s,64-#s*4/2,_y,inner_color)
 end
 
-function spawn_dust(x, y, inward, direction)
+function spawn_dust(x, y, inward)
     inward = inward or false
-    direction = direction or 0
-    local count = inward and (2 + flr(rnd(2))) or (3 + flr(rnd(4)))
+    local count = inward and (3 + flr(rnd(2))) or (3 + flr(rnd(4)))
     local life_min = inward and 5 or 8
     local life_max = inward and 8 or 12
 
     for i = 1, count do
-        local dx
-        if inward then
-            if direction > 0 then
-                dx = -0.8 + rnd(0.5)  -- range -0.8 to -0.3, leftward
-            elseif direction < 0 then
-                dx = 0.3 + rnd(0.5)   -- range 0.3 to 0.8, rightward
-            else
-                dx = rnd(1) - 0.5     -- range ±0.5, unbiased
-            end
-        else
-            dx = rnd(1) - 0.5         -- range ±0.5, outward spread
-        end
-
-        local dy = inward and (-0.2 - rnd(0.2)) or (-0.1 - rnd(0.2))
+        local dx = inward and (rnd(0.6) - 0.3) or (rnd(1) - 0.5)
+        local dy = inward and (-0.3 - rnd(0.2)) or (-0.1 - rnd(0.2))
 
         add(particles, {
             x = x,
