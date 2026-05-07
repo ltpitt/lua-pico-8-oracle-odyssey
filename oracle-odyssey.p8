@@ -844,9 +844,9 @@ function spawn_dust(x, y, inward, direction)
         local dx
         if inward then
             if direction > 0 then
-                dx = 0.3 + rnd(0.5)   -- range 0.3 to 0.8, rightward
-            elseif direction < 0 then
                 dx = -0.8 + rnd(0.5)  -- range -0.8 to -0.3, leftward
+            elseif direction < 0 then
+                dx = 0.3 + rnd(0.5)   -- range 0.3 to 0.8, rightward
             else
                 dx = rnd(1) - 0.5     -- range ±0.5, unbiased
             end
