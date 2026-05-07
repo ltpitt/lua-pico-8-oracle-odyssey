@@ -833,14 +833,28 @@ function write_c(s,_y,inner_color)
  print(s,64-#s*4/2,_y,inner_color)
 end
 
-function spawn_dust(x, y)
-    for i = 1, 3 + flr(rnd(3)) do
+function spawn_dust(x, y, inward)
+    inward = inward or false
+    local count = inward and (2 + flr(rnd(2))) or (3 + flr(rnd(3)))
+    local life_min = inward and 5 or 8
+    local life_max = inward and 8 or 12
+
+    for i = 1, count do
+        local dx
+        if inward then
+            dx = -0.8 + rnd(0.5)  -- range -0.8 to -0.3, leftward
+        else
+            dx = rnd(1) - 0.5     -- range ±0.5, outward spread
+        end
+
+        local dy = inward and (-0.2 - rnd(0.2)) or (-0.1 - rnd(0.2))
+
         add(particles, {
             x = x,
             y = y,
-            dx = rnd(1) - 0.5,
-            dy = -0.1 - rnd(0.2),
-            life = 8 + flr(rnd(5)),
+            dx = dx,
+            dy = dy,
+            life = life_min + flr(rnd(life_max - life_min + 1)),
             color = 6
         })
     end
