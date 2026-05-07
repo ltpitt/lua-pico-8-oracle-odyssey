@@ -183,6 +183,7 @@ function _draw()
         draw_splash()
     elseif game.state == game.states.game then
         draw_game()
+        draw_game_ui()
     elseif game.state == game.states.gameover then
         draw_gameover()
     elseif game.state == game.states.initial_entry then
@@ -192,9 +193,6 @@ function _draw()
     end
     if fading then
         draw_fade_overlay()
-    end
-    if game.state == game.states.game then
-        draw_game_ui()
     end
     pal()
     if flash_timer > 0 then
@@ -270,6 +268,10 @@ function add_power_up()
 end
 
 function update_game()
+  if not game.game_over or fading then
+    update_ground()
+  end
+
   if not game.game_over then
     if game.current_music ~= 13 then
       stop_music()
@@ -416,6 +418,7 @@ end
 
 function draw_game()
     draw_background()
+    draw_ground()
     draw_player()
     draw_obstacles()
     draw_power_ups()
@@ -453,6 +456,13 @@ end
 
 function draw_background()
   map(0, 0, 0, 0, 16, 16)             -- center copy
+end
+
+function draw_ground()
+    for i = 0, flr(screen_size / 8) do
+        local x = flr((i * 8 + ground_offset) % screen_size)
+        line(x, 97, x + 4, 97, 5)
+    end
 end
 
 function draw_player()
