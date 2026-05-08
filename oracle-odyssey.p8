@@ -141,6 +141,9 @@ function _init_game()
     collect_floats = {}
     collect_flash_timer = 0
     flash_timer = 0
+    level_fanfare_timer = 0
+    level_fanfare_active = false
+    prev_level = get_current_level()
 end
 
 function _update60()
@@ -177,9 +180,45 @@ function _update60()
             end
         end
     end
+
+    if game.state == game.states.game and not game.game_over then
+        -- Detect level changes
+        local current_level = get_current_level()
+        if current_level > prev_level then
+            level_fanfare_active = true
+            level_fanfare_timer = 30
+            sfx(9)  -- fanfare SFX
+            prev_level = current_level
+        end
+    end
+
+    -- Update fanfare timer
+    if level_fanfare_active then
+        level_fanfare_timer = level_fanfare_timer - 1
+        if level_fanfare_timer <= 0 then
+            level_fanfare_active = false
+            pal()  -- restore palette
+        end
+    end
 end
 
 function _draw()
+    -- Apply fanfare palette shift
+    if level_fanfare_active then
+        local progress = (30 - level_fanfare_timer) / 30
+        if progress < 0.5 then
+            -- Fade toward warm (brighten colors)
+            pal(0, 1)   -- black -> dark blue
+            pal(1, 2)   -- dark blue -> dark teal
+            pal(2, 3)
+            pal(3, 5)
+            pal(5, 10)  -- shift mid tones upward
+        else
+            -- Fade back to normal
+            pal()
+        end
+    end
+
     cls()
     local shake_x = 0
     if death_active then
@@ -876,6 +915,9 @@ function draw_level_info()
         local y = 38
         local msg = "level "..level
         local col = flr(game.level_announcement / 8) % 2 == 0 and 7 or 10
+        if level_fanfare_active then
+            col = 11
+        end
         write_c(msg, y, col)
         -- show random quote below level announcement with quotes
         write_c('"'..game.level_quote..'"', y + 10, col)
