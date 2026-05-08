@@ -303,6 +303,15 @@ function update_game()
     update_ground()
   end
 
+  -- Handle death sequence animation
+  if death_active then
+    death_timer = death_timer - 1
+    if death_timer <= 0 then
+      death_active = false
+      change_state(game.states.gameover)
+    end
+  end
+
   if not game.game_over then
     if game.current_music ~= 13 then
       stop_music()
