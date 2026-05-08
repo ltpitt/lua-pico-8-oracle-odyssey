@@ -177,6 +177,10 @@ end
 
 function _draw()
     cls()
+    local shake_x = 0
+    if death_active then
+        shake_x = (death_timer % 2 == 0) and -2 or 2
+    end
     if flash_timer == 3 then
         for i = 0, 15 do pal(i, 7) end
     elseif flash_timer == 2 then
@@ -189,8 +193,13 @@ function _draw()
     if game.state == game.states.splash then   
         draw_splash()
     elseif game.state == game.states.game then
-        draw_game()
+        draw_game(shake_x)
         draw_game_ui()
+        if death_active and death_timer < 5 then
+            fillp(0.5)
+            rectfill(0, 0, 127, 127, 7)
+            fillp()
+        end
     elseif game.state == game.states.gameover then
         draw_gameover()
     elseif game.state == game.states.initial_entry then
@@ -456,13 +465,13 @@ function update_gameover()
     end
 end
 
-function draw_game()
+function draw_game(shake_x)
     draw_background()
-    draw_ground()
-    draw_player()
-    draw_obstacles()
-    draw_power_ups()
-    draw_particles()
+    draw_ground(shake_x)
+    draw_player(shake_x)
+    draw_obstacles(shake_x)
+    draw_power_ups(shake_x)
+    draw_particles(shake_x)
 end
 
 function draw_game_ui()
@@ -498,14 +507,14 @@ function draw_background()
   map(0, 0, 0, 0, 16, 16)             -- center copy
 end
 
-function draw_ground()
+function draw_ground(shake_x)
     for i = 0, flr(screen_size / 8) do
         local x = flr((i * 8 + ground_offset) % screen_size)
-        line(x, 97, x + 4, 97, 5)
+        line(x + shake_x, 97, x + 4 + shake_x, 97, 5)
     end
 end
 
-function draw_player()
+function draw_player(shake_x)
     player.anim_timer = player.anim_timer + player.anim_speed
     local frames = player.anim_frames
 
@@ -522,10 +531,10 @@ function draw_player()
     end
 
     player.sprite = frames[flr(player.anim_timer) + 1]
-    spr(player.sprite, player.x, player.y)
+    spr(player.sprite, player.x + shake_x, player.y)
 end
 
-function draw_obstacles()
+function draw_obstacles(shake_x)
     for obstacle in all(obstacles) do
         local sprite_id = 32
         local width_in_sprites = ceil(obstacle.width / 8)
@@ -533,15 +542,15 @@ function draw_obstacles()
         
         for i = 0, width_in_sprites - 1 do
             for j = 0, height_in_sprites - 1 do
-                spr(sprite_id, obstacle.x + i * 8, obstacle.y + j * 8)
+                spr(sprite_id, obstacle.x + i * 8 + shake_x, obstacle.y + j * 8)
             end
         end
     end
 end
 
-function draw_power_ups()
+function draw_power_ups(shake_x)
     for power_up in all(power_ups) do
-        spr(19, power_up.x, power_up.y)
+        spr(19, power_up.x + shake_x, power_up.y)
     end
 end
 
@@ -811,6 +820,7 @@ function check_collisions()
             else
                 death_active = true
                 death_timer = 30
+                sfx(5)
             end
             game.game_over = true
         end
@@ -989,9 +999,9 @@ function update_particles()
     end
 end
 
-function draw_particles()
+function draw_particles(shake_x)
     for p in all(particles) do
-        pset(p.x, p.y, p.color)
+        pset(p.x + shake_x, p.y, p.color)
     end
 end
 
