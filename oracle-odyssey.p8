@@ -97,6 +97,13 @@ fade_timer = 0
 fading = false
 fade_in = false
 fade_duration = 4
+death_timer = 0
+death_active = false
+collect_floats = {}
+collect_flash_timer = 0
+level_fanfare_timer = 0
+level_fanfare_active = false
+prev_level = 0
 next_state = nil
 
 function _init()
