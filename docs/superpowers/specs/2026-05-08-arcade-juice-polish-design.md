@@ -71,7 +71,7 @@ Collecting power-ups is silent and invisible — the score increases, but there'
 ### Solution
 When power-up is collected (collision detected):
 1. **Screen Flash:** Brief white flash (1 frame, lighter than death)
-2. **Text Feedback:** "+100" text appears at collection point, floats upward, fades out
+2. **Text Feedback:** Random hyper-caffeinated dev/ops humor text appears at collection point, floats upward, fades out (e.g., "YEET!", "BUSSIN'", "SHIP IT", "PERFECT DEPLOY", etc.)
 3. **SFX:** Uplifting "ding" sound (higher pitch than death)
 
 **Timing:** 0.5s animation (text float + fade).
@@ -79,8 +79,9 @@ When power-up is collected (collision detected):
 ### Implementation Details
 
 **Floating text animation:**
-- Create a temporary text object: `{x, y, value, timer, life}`
+- Create a temporary text object: `{x, y, text, timer, life}`
 - Spawn at power-up collection point (power-up.x, power-up.y)
+- Text is randomly selected from a list of hyper-caffeinated dev/ops humor phrases (e.g., "YEET!", "BUSSIN'", "SHIP IT", "PERFECT DEPLOY", "NO BUGS", "PROD READY", "UNDEFEATED", etc.)
 - Each frame: `y -= 0.5` (float upward), `alpha` decreases from 1 to 0
 - Draw with reduced opacity as it fades
 - Remove when `life <= 0`
@@ -104,10 +105,10 @@ When power-up is collected (collision detected):
 
 **In `_update()`:**
 - For each float: decrement timer, update position, remove if dead
-- Decrement `collect_flash_timer`
+- Decrement `level_fanfare_timer`
 
 **In `_draw()`:**
-- Draw each float at calculated position with fading opacity
+- Draw each float at calculated position with fading opacity (random text from humor list)
 - Draw collect flash overlay if `collect_flash_timer > 0`
 
 ### Success Criteria
@@ -150,9 +151,9 @@ When level increases (at score thresholds):
 - After fanfare ends: `pal()` restores default palette
 
 **Musical sting:**
-- 3-4 ascending tones, each ~100ms apart
-- Each tone slightly higher pitch than the last
-- Play via existing SFX system (SFX slot 9 or 10)
+- Single iconic, short, trumphal note (like a classic arcade "level complete" or "power-up" fanfare)
+- Rising and bright, ~0.2s duration
+- Play via existing SFX system (SFX slot 9)
 
 **Level announcement existing code:**
 - Already shows level text and quote
