@@ -307,8 +307,8 @@ function update_game()
   if death_active then
     death_timer = death_timer - 1
     if death_timer <= 0 then
-      death_active = false
       change_state(game.states.gameover)
+      death_active = false
     end
   end
 
