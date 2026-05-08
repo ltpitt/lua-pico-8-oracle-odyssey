@@ -208,11 +208,11 @@ function _draw()
         local progress = (30 - level_fanfare_timer) / 30
         if progress < 0.5 then
             -- Fade toward warm (brighten colors)
-            pal(0, 1)   -- black -> dark blue
-            pal(1, 2)   -- dark blue -> dark teal
-            pal(2, 3)
-            pal(3, 5)
-            pal(5, 10)  -- shift mid tones upward
+            pal(0, 7)   -- black -> white (brighten)
+            pal(1, 10)  -- dark colors -> brighter mid-tones
+            pal(2, 11)
+            pal(3, 12)  -- warm tones
+            pal(5, 14)  -- brighter
         else
             -- Fade back to normal
             pal()
