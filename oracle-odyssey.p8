@@ -104,22 +104,6 @@ collect_flash_timer = 0
 prev_level = 0
 next_state = nil
 
--- Per-level background colors (contrasts with sprites for visibility)
-level_bg_colors = {
-    0,   -- level 1: black (default)
-    5,   -- level 2: dark gray/brown
-    1,   -- level 3: dark blue
-    2,   -- level 4: dark cyan
-    3,   -- level 5: dark purple
-    4,   -- level 6: dark red
-    13,  -- level 7: light purple (back to variety)
-}
-
-function get_level_bg_color()
-    local level = get_current_level()
-    return level_bg_colors[level] or 0
-end
-
 function _init()
     cartdata("oracle_odyssey")
     game.high_score = dget(0)
@@ -206,7 +190,7 @@ function _update60()
 end
 
 function _draw()
-    cls(get_level_bg_color())
+    cls()
     local shake_x = 0
     if death_active then
         shake_x = (death_timer % 2 == 0) and -2 or 2
