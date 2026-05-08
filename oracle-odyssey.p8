@@ -800,7 +800,8 @@ function check_collisions()
                 game.initial_pos = 1
                 change_state(game.states.initial_entry)
             else
-                change_state(game.states.gameover)
+                death_active = true
+                death_timer = 30
             end
             game.game_over = true
         end
