@@ -138,6 +138,8 @@ function _init_game()
     game.level_announcement = 0
     game.level_quote = ""
     particles = {}
+    collect_floats = {}
+    collect_flash_timer = 0
     flash_timer = 0
 end
 
@@ -153,6 +155,8 @@ function _update60()
     elseif game.state == game.states.hall_of_fame then
         update_hall_of_fame()
     end
+
+    update_collect_floats()
 
     if fading then
         fade_timer = fade_timer - 1
@@ -194,12 +198,28 @@ function _draw()
         draw_splash()
     elseif game.state == game.states.game then
         draw_game(shake_x)
-        draw_game_ui()
         if death_active and death_timer < 5 then
             fillp(0.5)
             rectfill(0, 0, 127, 127, 7)
             fillp()
         end
+
+        -- Draw collect floats
+        for float in all(collect_floats) do
+            local opacity = float.timer / 30
+            local col = 7  -- white
+            print(float.text, float.x, float.y, col)
+        end
+
+        -- Draw collect flash
+        if collect_flash_timer > 0 then
+            fillp(0.5)
+            rectfill(0, 0, 127, 127, 7)  -- white flash, semi-transparent
+            fillp()
+            collect_flash_timer = collect_flash_timer - 1
+        end
+
+        draw_game_ui()
     elseif game.state == game.states.gameover then
         draw_gameover()
     elseif game.state == game.states.initial_entry then
@@ -863,11 +883,37 @@ function draw_level_info()
 end
 
 function collect_power_up()
+    -- Spawn floating humor text at player position
+    local float = {
+        x = player.x + 4,
+        y = player.y,
+        text = get_random_humor(),
+        timer = 30,
+        opacity = 1
+    }
+    add(collect_floats, float)
+
+    -- Trigger flash
+    collect_flash_timer = 1
+
+    -- Play SFX
+    sfx(7)  -- collect ding
+
     player.double_jump_enabled = true
     player.double_jump_timer = player.double_jump_duration
     player.max_jumps = 2
     sfx(2, 3)
     flash_timer = 3
+end
+
+function update_collect_floats()
+    for float in all(collect_floats) do
+        float.timer = float.timer - 1
+        float.y = float.y - 0.5
+        if float.timer <= 0 then
+            del(collect_floats, float)
+        end
+    end
 end
 
 function decrease_power_up_timer()
