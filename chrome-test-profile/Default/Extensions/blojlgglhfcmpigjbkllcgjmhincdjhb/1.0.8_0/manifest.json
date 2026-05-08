@@ -1,0 +1,31 @@
+{
+   "action": {
+      "default_icon": {
+         "128": "icons/Flexera_mark-only_RGB_full-color_128x128.png",
+         "16": "icons/Flexera_mark-only_RGB_full-color_16x16.png",
+         "32": "icons/Flexera_mark-only_RGB_full-color_32x32.png",
+         "48": "icons/Flexera_mark-only_RGB_full-color_48x48.png",
+         "64": "icons/Flexera_mark-only_RGB_full-color_64x64.png"
+      }
+   },
+   "author": "Snow Software",
+   "background": {
+      "service_worker": "eventPage.js"
+   },
+   "description": "This extension tracks web application use for the purpose of license compliance and cost optimization. www.snowsoftware.com/browser",
+   "host_permissions": [ "*://*/*" ],
+   "icons": {
+      "128": "icons/Flexera_mark-only_RGB_full-color_128x128.png",
+      "16": "icons/Flexera_mark-only_RGB_full-color_16x16.png",
+      "32": "icons/Flexera_mark-only_RGB_full-color_32x32.png",
+      "48": "icons/Flexera_mark-only_RGB_full-color_48x48.png",
+      "64": "icons/Flexera_mark-only_RGB_full-color_64x64.png"
+   },
+   "incognito": "spanning",
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtw6hCTDf/Zso/Do+7rSxRcZhLaI4s8Yc9SWJFGdbk0d0eRI8ugSocb3HJCnIpZzVET002/190jjPU5QwIZ+kbA99pOzcjsYX7wYYaIg5pmwVFdexfE/1uzCGq/9BLF9ezC6bpzcKibwFo2OyREAueVGldeqTGyqoaGKeXWC57NMSmyMOprrY2xSgzy3XHTg+8Nqn3Y9K7ChWp4nRmeyUCCMbo69IfY8ffBVwdWoLxeA+5W8b8JtNiD0HP7sk5vdLiJJ/Ip3eIo6MauwQyCn6qD8hXaMV5oANUgfa7ODEVQ92uZumZVRGeNUfQdNWraaPQL/wfY/R6PWY/Qx+UsQZKwIDAQAB",
+   "manifest_version": 3,
+   "name": "Snow Web Application Metering",
+   "permissions": [ "webRequest", "nativeMessaging" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "1.0.8"
+}

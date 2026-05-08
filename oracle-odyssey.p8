@@ -197,26 +197,19 @@ function _update60()
         level_fanfare_timer = level_fanfare_timer - 1
         if level_fanfare_timer <= 0 then
             level_fanfare_active = false
-            pal()  -- restore palette
         end
     end
 end
 
 function _draw()
-    -- Apply fanfare palette shift
+    -- Apply subtle fanfare overlay (no harsh palette shift)
     if level_fanfare_active then
         local progress = (30 - level_fanfare_timer) / 30
-        if progress < 0.5 then
-            -- Fade toward warm (brighten colors)
-            pal(0, 7)   -- black -> white (brighten)
-            pal(1, 10)  -- dark colors -> brighter mid-tones
-            pal(2, 11)
-            pal(3, 12)  -- warm tones
-            pal(5, 14)  -- brighter
-        else
-            -- Fade back to normal
-            pal()
-        end
+        -- Smooth fade in/out (bell curve centered at 0.5)
+        local overlay_alpha = 0.15 * (1 - abs(progress - 0.5) * 2)
+        fillp(0.25)  -- 25% pattern for subtle effect
+        rectfill(0, 0, 127, 127, 7)  -- Soft white tint
+        fillp()  -- Reset fill pattern
     end
 
     cls()
