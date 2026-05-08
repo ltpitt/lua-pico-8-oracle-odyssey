@@ -405,7 +405,7 @@ function update_power_ups()
 end
 
 function update_ground()
-    local spd = get_obstacle_speed() * 0.5
+    local spd = get_obstacle_speed()
     ground_offset = (ground_offset - spd) % screen_size
 end
 
