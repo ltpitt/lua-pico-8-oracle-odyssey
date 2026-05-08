@@ -209,15 +209,15 @@ end
 
 function get_random_humor()
     local phrases = {
-        "YEET!",
-        "BUSSIN'",
+        "DEPLOY!",
+        "ZERO BUGS",
         "SHIP IT",
         "PERFECT",
         "NO BUGS",
         "PROD READY",
         "UNDEFEATED",
-        "BIG BRAIN",
-        "HUGE W",
+        "CODE REVIEW",
+        "MERGED!",
         "UNSTOPPABLE"
     }
     return phrases[flr(rnd(#phrases)) + 1]
