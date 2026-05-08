@@ -212,13 +212,13 @@ function get_random_humor()
         "DEPLOY!",
         "ZERO BUGS",
         "SHIP IT",
-        "PERFECT",
+        "SYNTAX OK",
         "NO BUGS",
         "PROD READY",
-        "UNDEFEATED",
+        "ALL TESTS PASS",
         "CODE REVIEW",
         "MERGED!",
-        "UNSTOPPABLE"
+        "OPTIMIZED"
     }
     return phrases[flr(rnd(#phrases)) + 1]
 end
