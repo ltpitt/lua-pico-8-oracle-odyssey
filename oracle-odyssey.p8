@@ -101,10 +101,24 @@ death_timer = 0
 death_active = false
 collect_floats = {}
 collect_flash_timer = 0
-level_fanfare_timer = 0
-level_fanfare_active = false
 prev_level = 0
 next_state = nil
+
+-- Per-level background colors (contrasts with sprites for visibility)
+level_bg_colors = {
+    0,   -- level 1: black (default)
+    5,   -- level 2: dark gray/brown
+    1,   -- level 3: dark blue
+    2,   -- level 4: dark cyan
+    3,   -- level 5: dark purple
+    4,   -- level 6: dark red
+    13,  -- level 7: light purple (back to variety)
+}
+
+function get_level_bg_color()
+    local level = get_current_level()
+    return level_bg_colors[level] or 0
+end
 
 function _init()
     cartdata("oracle_odyssey")
@@ -185,34 +199,14 @@ function _update60()
         -- Detect level changes
         local current_level = get_current_level()
         if current_level > prev_level then
-            level_fanfare_active = true
-            level_fanfare_timer = 30
-            sfx(9)  -- fanfare SFX
+            sfx(9)  -- fanfare SFX sting
             prev_level = current_level
-        end
-    end
-
-    -- Update fanfare timer
-    if level_fanfare_active then
-        level_fanfare_timer = level_fanfare_timer - 1
-        if level_fanfare_timer <= 0 then
-            level_fanfare_active = false
         end
     end
 end
 
 function _draw()
-    -- Apply subtle fanfare overlay (no harsh palette shift)
-    if level_fanfare_active then
-        local progress = (30 - level_fanfare_timer) / 30
-        -- Smooth fade in/out (bell curve centered at 0.5)
-        local overlay_alpha = 0.15 * (1 - abs(progress - 0.5) * 2)
-        fillp(0.25)  -- 25% pattern for subtle effect
-        rectfill(0, 0, 127, 127, 7)  -- Soft white tint
-        fillp()  -- Reset fill pattern
-    end
-
-    cls()
+    cls(get_level_bg_color())
     local shake_x = 0
     if death_active then
         shake_x = (death_timer % 2 == 0) and -2 or 2
@@ -908,9 +902,6 @@ function draw_level_info()
         local y = 38
         local msg = "level "..level
         local col = flr(game.level_announcement / 8) % 2 == 0 and 7 or 10
-        if level_fanfare_active then
-            col = 11
-        end
         write_c(msg, y, col)
         -- show random quote below level announcement with quotes
         write_c('"'..game.level_quote..'"', y + 10, col)
