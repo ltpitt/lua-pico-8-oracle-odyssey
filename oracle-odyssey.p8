@@ -207,6 +207,22 @@ function _draw()
     end
 end
 
+function get_random_humor()
+    local phrases = {
+        "YEET!",
+        "BUSSIN'",
+        "SHIP IT",
+        "PERFECT",
+        "NO BUGS",
+        "PROD READY",
+        "UNDEFEATED",
+        "BIG BRAIN",
+        "HUGE W",
+        "UNSTOPPABLE"
+    }
+    return phrases[flr(rnd(#phrases)) + 1]
+end
+
 function add_obstacle()
     local obstacle_y = 88
     local obstacle_height = 8
