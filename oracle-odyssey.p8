@@ -213,48 +213,56 @@ function add_obstacle()
         obstacle_height = 8
         obstacle_width = 8
     elseif level == 2 then
-        if random_value < 0.1 then
-            obstacle_height = 16
-        elseif random_value < 0.2 then
-            obstacle_width = 16
+        if random_value < 0.15 then
+            if random_value < 0.075 then
+                obstacle_height = 16
+            else
+                obstacle_width = 16
+            end
         end
     elseif level == 3 then
-        if random_value < 0.1 then
-            obstacle_height = 16
-            obstacle_width = 16
-        elseif random_value < 0.3 then
-            obstacle_height = 16
-        elseif random_value < 0.5 then
-            obstacle_width = 16
+        if random_value < 0.25 then
+            if random_value < 0.075 then
+                obstacle_height = 16
+                obstacle_width = 16
+            elseif random_value < 0.15 then
+                obstacle_height = 16
+            else
+                obstacle_width = 16
+            end
         end
     elseif level == 4 then
-        if random_value < 0.1 then
-            obstacle_height = 16
-            obstacle_width = 16
-        elseif random_value < 0.3 then
-            obstacle_height = 16
-        elseif random_value < 0.5 then
-            obstacle_width = 16
+        if random_value < 0.35 then
+            if random_value < 0.1 then
+                obstacle_height = 16
+                obstacle_width = 16
+            elseif random_value < 0.225 then
+                obstacle_height = 16
+            else
+                obstacle_width = 16
+            end
         end
     elseif level == 5 then
-        obstacle_dy = 0.7
-        local starting_height = flr(rnd(2)) + 1
-        if(starting_height) == 1 then
-            obstacle_y = 80
-        else
-            obstacle_y = 60
-        end 
         if random_value < 0.5 then
-            obstacle_height = 16
+            if random_value < 0.15 then
+                obstacle_height = 16
+                obstacle_width = 16
+            elseif random_value < 0.325 then
+                obstacle_height = 16
+            else
+                obstacle_width = 16
+            end
         end
     else
-        if random_value < 0.05 then
-            obstacle_height = 16
-            obstacle_width = 16
-        elseif random_value < 0.25 then
-            obstacle_height = 16
-        elseif random_value < 0.45 then
-            obstacle_width = 16
+        if random_value < 0.65 then
+            if random_value < 0.2 then
+                obstacle_height = 16
+                obstacle_width = 16
+            elseif random_value < 0.425 then
+                obstacle_height = 16
+            else
+                obstacle_width = 16
+            end
         end
     end
 
